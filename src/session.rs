@@ -4,20 +4,24 @@ use ashpd::zbus::dbus_interface;
 use futures::{pending, StreamExt};
 use logind_zbus::session::SessionProxy;
 use logind_zbus::manager::{ManagerProxy, self};
+use zbus::ObjectServer;
 use zbus::fdo::DBusProxy;
 use zbus_systemd::systemd1::ManagerProxy as SystemdManagerProxy;
 use color_eyre::Result;
-use tracing::debug;
+use tracing::{debug, info};
+use event_listener::Event;
 
 // catch the signal when ending session
-struct Session;
+struct D5 {
+    pub quit_event: Event
+}
 
 
-#[dbus_interface(name = "org.freedesktop.login1.Session")]
-impl Session {
+#[dbus_interface(name = "com.fyralabs.d5")]
+impl D5 {
     fn stop(&self) {
-        debug!("Stopping session");
-        std::process::exit(0);
+        info!("Stopping session");
+        self.quit_event.notify(1);
     }
 }
 
@@ -59,9 +63,19 @@ pub async fn new_session(unit: String) -> Result<()> {
     let session = manager.get_session(&id).await?;
 
     sess.activate().await?;
-
-
     debug!("Session: {:?}", session);
-    pending!();
+
+    let event = Event::new();
+    let listener = event.listen();
+    let session = D5 {
+        quit_event: event
+    };
+    
+
+    let handle = crate::proc::BusHandle::from_interface(session, "com.fyralabs.d5".to_owned(), "/com/fyralabs/d5".to_owned()).await?;
+    // object server
+    crate::proc::HandleManager::fetch().add_handle(handle);
+
+    listener.await;
     Ok(())
 }

@@ -14,33 +14,6 @@ use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::Subs
 use zbus::ConnectionBuilder;
 
 // zbus interface trait
-struct D5 {
-    pub data: String,
-}
-
-#[zbus::dbus_interface(name = "com.fyralabs.d5")]
-impl D5 {
-    fn add_name(&mut self, name: String) {
-        self.data = name;
-    }
-
-    fn hello(&self) -> String {
-        format!("Hello from d5! {}", self.data)
-    }
-    fn exit(&self) {
-        // reply to the client
-        std::process::exit(0);
-    }
-}
-
-struct NotifDaemon;
-
-#[zbus::dbus_interface(name = "org.freedesktop.Notifications")]
-impl NotifDaemon {
-    fn notify(&self) {
-        println!("Hello from the notification daemon!");
-    }
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -50,7 +23,7 @@ async fn main() -> Result<()> {
         .panic_section("It's not that I won't do it, I just can't!")
         .install()?;
     pretty_env_logger::formatted_builder()
-        .filter_level(log::LevelFilter::Trace)
+        .filter_level(log::LevelFilter::Debug)
         .init();
 
     // load tracing_journald subscriber

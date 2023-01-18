@@ -30,14 +30,14 @@ pub fn load_envs(session: crate::cli::DisplayMode) -> Result<()> {
 
         // load from .config/environment.d
         // turns out systemd already takes care of this
-        // for file in files
-        //     .config_dir()
-        //     .join("environment.d")
-        //     .read_dir()?
-        //     .filter(|f| f.is_ok())
-        // {
-        //     envs.push(file?.path());
-        // }
+        for file in files
+            .config_dir()
+            .join("environment.d")
+            .read_dir()?
+            .filter(|f| f.is_ok())
+        {
+            envs.push(file?.path());
+        }
     }
 
     for env in envs {
