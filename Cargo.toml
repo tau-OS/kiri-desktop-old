@@ -10,7 +10,7 @@ edition = "2021"
 [dependencies]
 ashpd = { version = "0.3.2", features = ["default_features", "log", "tokio_runtime"] }
 chrono = "0.4.23"
-clap = "4.1.1"
+clap = { version = "4.1.1", features = ["derive", "env"] }
 color-eyre = "0.6.2"
 directories = "4.0.1"
 dotenvy = "0.15.6"
@@ -26,3 +26,4 @@ test-log = "0.2.11"
 tokio = { version = "1.24.1", features = ["full", "tracing"] }
 tracing = { version = "0.1.37", features = ["log", "async-await"] }
 zbus = { version = "3.7.0", features = ["tokio", "chrono", "gvariant", "xml"] }
+zbus_systemd = { version = "0.0.8", features = ["login1", "systemd1"] }

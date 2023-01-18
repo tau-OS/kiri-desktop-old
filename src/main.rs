@@ -5,6 +5,8 @@ mod notify;
 mod proc;
 mod interface;
 mod env;
+mod cli;
+mod session;
 
 use color_eyre::Result;
 use tracing::{debug, log};
@@ -50,14 +52,12 @@ async fn main() -> Result<()> {
         .filter_level(log::LevelFilter::Debug)
         .init();
 
-    // notify::listen().await?;\
-    crate::env::load_envs()?;
-
     let conn = ConnectionBuilder::session()?.build().await?;
     conn.monitor_activity().await;
 
 
-    futures::pending!();
+    // futures::pending!();
 
-    Ok(())
+    // Ok(())
+    cli::entrypoint().await
 }

@@ -6,9 +6,15 @@ use directories::{BaseDirs, UserDirs};
 use std::{process::Command, path::PathBuf};
 use tracing::{debug, log::warn};
 
-pub fn load_envs() -> Result<()> {
+pub fn load_envs(session: crate::cli::DisplayMode) -> Result<()> {
     let b = BaseDirs::new();
     let u = UserDirs::new();
+
+    // set XDG desktop session type
+    match session {
+        crate::cli::DisplayMode::X11 => std::env::set_var("XDG_SESSION_TYPE", "x11"),
+        crate::cli::DisplayMode::Wayland => std::env::set_var("XDG_SESSION_TYPE", "wayland"),
+    }
 
     // set tracing target
 
