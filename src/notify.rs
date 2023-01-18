@@ -3,8 +3,6 @@ use color_eyre::Result;
 use futures::{StreamExt, TryStreamExt};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
-use std::num::NonZeroI64;
-use std::sync::Arc;
 use tracing::debug;
 use zbus::fdo::MonitoringProxy;
 use zbus::zvariant::{Structure, Value, OwnedValue};

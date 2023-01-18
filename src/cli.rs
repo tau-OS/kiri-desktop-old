@@ -32,7 +32,7 @@ pub struct D5Entrypoint {
 
 pub async fn entrypoint() -> Result<()> {
     let args = D5Entrypoint::parse();
-    crate::env::load_envs(args.display)?;
-    crate::session::new_session("test".to_string()).await?;
+    // crate::env::load_envs(args.display)?;
+    crate::session::new_session(args.target).await?;
     Ok(())
 }

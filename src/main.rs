@@ -10,6 +10,7 @@ mod session;
 
 use color_eyre::Result;
 use tracing::{debug, log};
+use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
 use zbus::ConnectionBuilder;
 
 // zbus interface trait
@@ -49,11 +50,13 @@ async fn main() -> Result<()> {
         .panic_section("It's not that I won't do it, I just can't!")
         .install()?;
     pretty_env_logger::formatted_builder()
-        .filter_level(log::LevelFilter::Debug)
+        .filter_level(log::LevelFilter::Trace)
         .init();
 
-    let conn = ConnectionBuilder::session()?.build().await?;
-    conn.monitor_activity().await;
+    // load tracing_journald subscriber
+    // tracing_subscriber::registry().with(tracing_journald::layer().unwrap()).init();
+    // let conn = ConnectionBuilder::session()?.build().await?;
+    // conn.monitor_activity().await;
 
 
     // futures::pending!();
