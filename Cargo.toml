@@ -1,6 +1,7 @@
 [workspace]
 members = [
-    "d5"
+    "d5",
+    "kiri",
 ]
 
 default-members = [

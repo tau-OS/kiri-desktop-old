@@ -1,0 +1,13 @@
+---
+
+
+- name: Test
+  hosts: default
+  tasks:
+    - name: Install LightDM
+      become: true
+      ansible.builtin.dnf:
+        name:
+          - lightdm
+          - lightdm-gtk-greeter
+        state: present
