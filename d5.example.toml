@@ -1,0 +1,35 @@
+# d5 settings example
+# subject to change as time goes on
+
+[session]
+# leader process, d5 will exit if leader process exists, or it recieves a D-Bus signal
+leader = "mutter --nested" # you can use any command here
+autostart = true
+
+# xdg autostart backend
+xdg_autostart = "systemd"
+
+
+[services]
+# Services section
+# you can define systemd services here or use custom commands
+[services.ibus]
+# ibus service
+unit = "ibus.service"
+type = "systemd" # or "script"
+
+[services.gnome-keyring]
+unit = "gnome-keyring-daemon.service"
+type = "systemd"
+
+[services.gnome-settings-daemon]
+unit = "gnome-settings-daemon.service"
+type = "systemd"
+
+[services.mondai]
+script = "mondai"
+type = "script"
+
+[services.kiri]
+unit = "kiri-desktop.target"
+type = "systemd"
