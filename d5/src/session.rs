@@ -11,6 +11,8 @@ use color_eyre::Result;
 use tracing::{debug, info};
 use event_listener::Event;
 
+use crate::config::Config;
+
 // catch the signal when ending session
 struct D5 {
     pub quit_event: Event
@@ -19,22 +21,20 @@ struct D5 {
 
 #[dbus_interface(name = "com.fyralabs.d5")]
 impl D5 {
-    fn stop(&self) {
+    fn goodbye_declaration(&self) {
         info!("Stopping session");
         self.quit_event.notify(1);
     }
 }
 
 // session management
-pub async fn new_session(unit: String) -> Result<()> {
+pub async fn new_session(config: Config) -> Result<()> {
     let conn = zbus::Connection::session().await?;
 
     // load the systemd target for the session
 
-    let systemd_manager = SystemdManagerProxy::new(&conn).await?;
-    // let name = "gnome-session-x11.target";
-    let target = systemd_manager.start_unit(unit, "replace".to_string()).await?;
-    // kill d5 when the target is stopped
+    // let systemd_manager = SystemdManagerProxy::new(&conn).await?;
+    // let target = systemd_manager.start_unit(unit, "replace".to_string()).await?;
 
 
     // systemd: watch this unit
@@ -47,6 +47,16 @@ pub async fn new_session(unit: String) -> Result<()> {
     //         debug!("Unit removed: {:?}", unit);
     //     }
     // });
+
+    // shell_words to split command
+    let cmd = shell_words::split(&config.session.leader).unwrap();
+    let (cmd, args) = cmd.split_first().unwrap();
+
+    let mut cmd = tokio::process::Command::new(cmd)
+        .args(args)
+        .spawn()
+        .expect("Failed to spawn command");
+
 
     // activate session
     // manager.activate_session(&session_id).await?;
@@ -76,6 +86,15 @@ pub async fn new_session(unit: String) -> Result<()> {
     // object server
     crate::proc::HandleManager::fetch().add_handle(handle);
 
-    listener.await;
+    // tokio select wait for listener signal or wait for cmd to finish
+    tokio::select! {
+        _ = cmd.wait() => {
+            info!("Command finished");
+        }
+        _ = listener => {
+            info!("Listener finished");
+        }
+    }
+    // listener.await;
     Ok(())
 }

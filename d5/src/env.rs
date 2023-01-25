@@ -3,13 +3,12 @@
 // It should load files from .profile and .config
 use color_eyre::Result;
 use directories::{BaseDirs, UserDirs};
-use std::{process::Command, path::PathBuf};
+use std::{path::PathBuf, process::Command};
 use tracing::{debug, log::warn};
 
 pub fn load_envs(session: crate::cli::DisplayMode) -> Result<()> {
     let b = BaseDirs::new();
     let u = UserDirs::new();
-
 
     // set tracing target
 
@@ -21,27 +20,37 @@ pub fn load_envs(session: crate::cli::DisplayMode) -> Result<()> {
         tracing::span!(tracing::Level::DEBUG, "Loading .profile").in_scope({
             || {
                 let profile_path = files.home_dir().join(".profile");
-                Command::new("sh")
-                    .arg("-c")
-                    .arg(format!("source {}", profile_path.to_str().unwrap()))
-                    .spawn().unwrap();
+                if profile_path.exists() {
+                    Command::new("sh")
+                        .arg("-c")
+                        .arg(format!("source {}", profile_path.to_str().unwrap()))
+                        .spawn()
+                        .unwrap()
+                        .wait()
+                        .unwrap();
+                }
             }
         });
 
         // load from .config/environment.d
         // turns out systemd already takes care of this
-        for file in files
-            .config_dir()
-            .join("environment.d")
-            .read_dir()?
-            .filter(|f| f.is_ok())
+
+        if files.config_dir().join("environment.d").exists()
+            && files.config_dir().join("environment.d").is_dir()
         {
-            envs.push(file?.path());
+            for file in files
+                .config_dir()
+                .join("environment.d")
+                .read_dir()?
+                .filter(|f| f.is_ok())
+            {
+                envs.push(file?.path());
+            }
         }
     }
 
     for env in envs {
-        let h =  dotenvy::from_path(&env);
+        let h = dotenvy::from_path(&env);
         if h.is_ok() {
             debug!("Loaded env from: {:?}", env);
         } else {
@@ -52,4 +61,3 @@ pub fn load_envs(session: crate::cli::DisplayMode) -> Result<()> {
 
     Ok(())
 }
-

@@ -7,6 +7,7 @@ mod interface;
 mod env;
 mod cli;
 mod session;
+mod config;
 
 use color_eyre::Result;
 use tracing::{debug, log};

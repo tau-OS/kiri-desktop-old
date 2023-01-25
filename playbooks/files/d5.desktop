@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=D5
+Comment=Log in using the Openbox window manager (without a session manager)
+Exec=/usr/bin/d5 --session openbox
+Icon=
+Type=Application

@@ -4,10 +4,85 @@
 - name: Test
   hosts: default
   tasks:
+
+    - name: Configure vagrant user (add to wheel group)
+      become: true
+      ansible.builtin.user:
+        name: vagrant
+        groups: wheel
+        append: true
+
     - name: Install LightDM
       become: true
       ansible.builtin.dnf:
         name:
           - lightdm
           - lightdm-gtk-greeter
+          - "@Basic Desktop"
+          - nano
+          - sway
         state: present
+
+    - name: Enable LightDM
+      become: true
+      ansible.builtin.systemd:
+        name: lightdm
+        enabled: true
+
+    - name: Set graphical target as default
+      become: true
+      ansible.builtin.systemd:
+        name: graphical.target
+        enabled: true
+
+    - name: Use Shell to set default target
+      become: true
+      ansible.builtin.command: systemctl set-default graphical.target
+      changed_when: false
+
+    # install the xsession file
+    - name: Install d5 xsession
+      become: true
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: 0644
+      loop:
+        - src: files/d5.desktop
+          dest: /usr/share/xsessions/d5.desktop
+        - src: files/d5-wayland.desktop
+          dest: /usr/share/wayland-sessions/d5-wayland.desktop
+
+
+    - name: Create d5 config directory
+      become: true
+      ansible.builtin.file:
+        path: /etc/d5.conf.d
+        state: directory
+        mode: 0755
+
+    - name: Install test session
+      become: true
+      ansible.builtin.copy:
+        src: files/openbox.toml
+        dest: /etc/d5.conf.d/openbox.toml
+        owner: root
+        force: true
+        group: root
+        mode: 0644
+
+    - name: Symlink d5 from /usr/local/target/debug to /usr/bin
+      become: true
+      ansible.builtin.file:
+        src: /usr/local/target/debug/d5
+        force: true
+        dest: /usr/bin/d5
+        state: link
+
+    - name: Start LightDM
+      become: true
+      ansible.builtin.systemd:
+        name: lightdm
+        state: started
