@@ -39,6 +39,7 @@ use smithay::{
     utils::{DeviceFd, IsAlive, Point, Scale},
     wayland::{compositor, input_method::InputMethodSeat},
 };
+use tracing::{debug, error, info, trace, warn};
 
 pub const OUTPUT_NAME: &str = "x11";
 
@@ -129,7 +130,7 @@ pub fn run_x11(log: Logger) {
 
     #[cfg(feature = "egl")]
     let dmabuf_state = if renderer.bind_wl_display(&display.handle()).is_ok() {
-        info!(log, "EGL hardware-acceleration enabled");
+        info!("EGL hardware-acceleration enabled");
         let dmabuf_formats = renderer.dmabuf_formats().cloned().collect::<Vec<_>>();
         let mut state = DmabufState::new();
         let global = state.create_global::<AnvilState<X11Data>, _>(
@@ -236,9 +237,9 @@ pub fn run_x11(log: Logger) {
 
     #[cfg(feature = "xwayland")]
     if let Err(e) = state.xwayland.start(state.handle.clone()) {
-        error!(log, "Failed to start XWayland: {}", e);
+        error!("Failed to start XWayland: {}", e);
     }
-    info!(log, "Initialization completed, starting the main loop.");
+    info!("Initialization completed, starting the main loop.");
 
     let mut pointer_element = PointerElement::default();
 
@@ -257,7 +258,7 @@ pub fn run_x11(log: Logger) {
                 .buffer()
                 .expect("gbm device was destroyed");
             if let Err(err) = backend_data.renderer.bind(buffer) {
-                error!(log, "Error while binding buffer: {}", err);
+                error!("Error while binding buffer: {}", err);
                 continue;
             }
 
@@ -351,10 +352,10 @@ pub fn run_x11(log: Logger) {
 
             match render_res {
                 Ok((damage, states)) => {
-                    trace!(log, "Finished rendering");
+                    trace!("Finished rendering");
                     if let Err(err) = backend_data.surface.submit() {
                         backend_data.surface.reset_buffers();
-                        warn!(log, "Failed to submit buffer: {}. Retrying", err);
+                        warn!("Failed to submit buffer: {}. Retrying", err);
                     } else {
                         state.backend_data.render = false;
                     };
@@ -410,7 +411,7 @@ pub fn run_x11(log: Logger) {
                     }
 
                     backend_data.surface.reset_buffers();
-                    error!(log, "Rendering error: {}", err);
+                    error!("Rendering error: {}", err);
                     // TODO: convert RenderError into SwapBuffersError and skip temporary (will retry) and panic on ContextLost or recreate
                 }
             }

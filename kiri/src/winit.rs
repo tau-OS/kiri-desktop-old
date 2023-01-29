@@ -35,6 +35,7 @@ use smithay::{
     utils::{IsAlive, Point, Scale, Transform},
     wayland::{compositor, input_method::InputMethodSeat},
 };
+use tracing::{debug, error, info, trace, warn};
 
 use crate::state::{post_repaint, take_presentation_feedback, AnvilState, Backend, CalloopData};
 use crate::{drawing::*, render::*};
@@ -91,7 +92,7 @@ pub fn run_winit(log: Logger) {
     let (mut backend, mut winit) = match winit::init::<Gles2Renderer, _>(log.clone()) {
         Ok(ret) => ret,
         Err(err) => {
-            slog::crit!(log, "Failed to initialize Winit backend: {}", err);
+            error!("Failed to initialize Winit backend: {}", err);
             return;
         }
     };
@@ -146,7 +147,7 @@ pub fn run_winit(log: Logger) {
             .bind_wl_display(&display.handle())
             .is_ok()
         {
-            info!(log, "EGL hardware-acceleration enabled");
+            info!("EGL hardware-acceleration enabled");
             let dmabuf_formats = backend
                 .renderer()
                 .dmabuf_formats()
@@ -180,10 +181,10 @@ pub fn run_winit(log: Logger) {
 
     #[cfg(feature = "xwayland")]
     if let Err(e) = state.xwayland.start(state.handle.clone()) {
-        error!(log, "Failed to start XWayland: {}", e);
+        error!("Failed to start XWayland: {}", e);
     }
 
-    info!(log, "Initialization completed, starting the main loop.");
+    info!("Initialization completed, starting the main loop.");
 
     let mut pointer_element = PointerElement::<Gles2Texture>::default();
 
@@ -331,7 +332,7 @@ pub fn run_winit(log: Logger) {
                     let has_rendered = damage.is_some();
                     if let Some(damage) = damage {
                         if let Err(err) = backend.submit(Some(&*damage)) {
-                            warn!(log, "Failed to submit buffer: {}", err);
+                            warn!("Failed to submit buffer: {}", err);
                         }
                     }
                     backend.window().set_cursor_visible(cursor_visible);
@@ -355,10 +356,10 @@ pub fn run_winit(log: Logger) {
                     }
                 }
                 Err(SwapBuffersError::ContextLost(err)) => {
-                    error!(log, "Critical Rendering Error: {}", err);
+                    error!("Critical Rendering Error: {}", err);
                     state.running.store(false, Ordering::SeqCst);
                 }
-                Err(err) => warn!(log, "Rendering error: {}", err),
+                Err(err) => warn!("Rendering error: {}", err),
             }
         }
 

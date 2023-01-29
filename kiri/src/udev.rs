@@ -1,3 +1,4 @@
+use slog::Logger;
 use std::{
     borrow::Cow,
     cell::RefCell,
@@ -9,8 +10,7 @@ use std::{
     sync::{atomic::Ordering, Mutex},
     time::Duration,
 };
-
-use slog::Logger;
+use tracing::{debug, error, info, trace, warn};
 
 use crate::{
     drawing::*,
@@ -159,7 +159,7 @@ impl Backend for UdevData {
             .gpus
             .early_import(Some(self.primary_gpu), self.primary_gpu, surface)
         {
-            warn!(self.logger, "Early buffer import failed: {}", err);
+            warn!("Early buffer import failed: {}", err);
         }
     }
 }
@@ -174,7 +174,7 @@ pub fn run_udev(log: Logger) {
     let (session, notifier) = match LibSeatSession::new(log.clone()) {
         Ok(ret) => ret,
         Err(err) => {
-            crit!(log, "Could not initialize a session: {}", err);
+            error!("Could not initialize a session: {}", err);
             return;
         }
     };
@@ -201,7 +201,7 @@ pub fn run_udev(log: Logger) {
                     .expect("No GPU!")
             })
     };
-    info!(log, "Using {} as primary gpu.", primary_gpu);
+    info!("Using {} as primary gpu.", primary_gpu);
 
     // todo: allow usage of software rendering (llvmpipe)
     #[cfg_attr(not(feature = "egl"), allow(unused_mut))]
@@ -233,12 +233,12 @@ pub fn run_udev(log: Logger) {
     #[cfg(feature = "egl")]
     let dmabuf_state = {
         info!(
-            log,
-            "Trying to initialize EGL Hardware Acceleration via {:?}", primary_gpu
+            "Trying to initialize EGL Hardware Acceleration via {:?}",
+            primary_gpu
         );
 
         if renderer.bind_wl_display(&display.handle()).is_ok() {
-            info!(log, "EGL hardware-acceleration enabled");
+            info!("EGL hardware-acceleration enabled");
             let dmabuf_formats = renderer.dmabuf_formats().cloned().collect::<Vec<_>>();
             let mut state = DmabufState::new();
             let global = state.create_global::<AnvilState<UdevData>, _>(
@@ -275,7 +275,7 @@ pub fn run_udev(log: Logger) {
     let udev_backend = match UdevBackend::new(&state.seat_name, log.clone()) {
         Ok(ret) => ret,
         Err(err) => {
-            crit!(log, "Failed to initialize udev backend"; "error" => err);
+            error!(?err, "Failed to initialize udev backend");
             return;
         }
     };
@@ -359,7 +359,7 @@ pub fn run_udev(log: Logger) {
      */
     #[cfg(feature = "xwayland")]
     if let Err(e) = state.xwayland.start(state.handle.clone()) {
-        error!(log, "Failed to start XWayland: {}", e);
+        error!("Failed to start XWayland: {}", e);
     }
 
     /*
@@ -431,7 +431,7 @@ fn scan_connectors(
         .iter()
         .map(|conn| device.get_connector(*conn, true).unwrap())
         .filter(|conn| conn.state() == ConnectorState::Connected)
-        .inspect(|conn| info!(logger, "Connected: {:?}", conn.interface()))
+        .inspect(|conn| info!("Connected: {:?}", conn.interface()))
         .collect();
 
     let mut backends = HashMap::new();
@@ -469,7 +469,6 @@ fn scan_connectors(
             };
 
             info!(
-                logger,
                 "Trying to setup connector {:?}-{} with crtc {:?}",
                 connector_info.interface(),
                 connector_info.interface_id(),
@@ -480,7 +479,7 @@ fn scan_connectors(
             let surface = match device.create_surface(crtc, mode, &[connector_info.handle()]) {
                 Ok(surface) => surface,
                 Err(err) => {
-                    warn!(logger, "Failed to create drm surface: {}", err);
+                    warn!("Failed to create drm surface: {}", err);
                     continue;
                 }
             };
@@ -493,7 +492,7 @@ fn scan_connectors(
             ) {
                 Ok(renderer) => renderer,
                 Err(err) => {
-                    warn!(logger, "Failed to create rendering surface: {}", err);
+                    warn!("Failed to create rendering surface: {}", err);
                     continue;
                 }
             };
@@ -588,16 +587,16 @@ impl AnvilState<UdevData> {
             Some((Ok(drm), Ok(gbm))) => (drm, gbm),
             Some((Err(err), _)) => {
                 warn!(
-                    self.log,
-                    "Skipping device {:?}, because of drm error: {}", device_id, err
+                    "Skipping device {:?}, because of drm error: {}",
+                    device_id, err
                 );
                 return;
             }
             Some((_, Err(err))) => {
                 // TODO try DumbBuffer allocator in this case
                 warn!(
-                    self.log,
-                    "Skipping device {:?}, because of gbm error: {}", device_id, err
+                    "Skipping device {:?}, because of gbm error: {}",
+                    device_id, err
                 );
                 return;
             }
@@ -607,10 +606,7 @@ impl AnvilState<UdevData> {
         let node = match DrmNode::from_dev_id(device_id) {
             Ok(node) => node,
             Err(err) => {
-                warn!(
-                    self.log,
-                    "Failed to access drm node for {}: {}", device_id, err
-                );
+                warn!("Failed to access drm node for {}: {}", device_id, err);
                 return;
             }
         };
@@ -632,7 +628,7 @@ impl AnvilState<UdevData> {
                     data.state.frame_finish(node, crtc, metadata);
                 }
                 DrmEvent::Error(error) => {
-                    error!(data.state.log, "{:?}", error);
+                    error!(?error);
                 }
             },
         );
@@ -643,7 +639,7 @@ impl AnvilState<UdevData> {
 
         for backend in backends.borrow_mut().values() {
             // render first frame
-            trace!(self.log, "Scheduling frame");
+            trace!("Scheduling frame");
             schedule_initial_render(
                 &mut self.backend_data.gpus,
                 backend.clone(),
@@ -729,7 +725,7 @@ impl AnvilState<UdevData> {
         if let Some(backend_data) = self.backend_data.backends.remove(&node) {
             // drop surfaces
             backend_data.surfaces.borrow_mut().clear();
-            debug!(self.log, "Surfaces dropped");
+            debug!("Surfaces dropped");
 
             for output in self
                 .space
@@ -751,7 +747,7 @@ impl AnvilState<UdevData> {
             self.handle.remove(backend_data.registration_token);
             let _device = backend_data.event_dispatcher.into_source_inner();
 
-            debug!(self.log, "Dropping device");
+            debug!("Dropping device");
         }
     }
 
@@ -764,10 +760,7 @@ impl AnvilState<UdevData> {
         let device_backend = match self.backend_data.backends.get_mut(&dev_id) {
             Some(backend) => backend,
             None => {
-                error!(
-                    self.log,
-                    "Trying to finish frame on non-existent backend {}", dev_id
-                );
+                error!("Trying to finish frame on non-existent backend {}", dev_id);
                 return;
             }
         };
@@ -776,10 +769,7 @@ impl AnvilState<UdevData> {
         let surface = match surfaces.get(&crtc) {
             Some(surface) => surface,
             None => {
-                error!(
-                    self.log,
-                    "Trying to finish frame on non-existent crtc {:?}", crtc
-                );
+                error!("Trying to finish frame on non-existent crtc {:?}", crtc);
                 return;
             }
         };
@@ -840,7 +830,7 @@ impl AnvilState<UdevData> {
                 true
             }
             Err(err) => {
-                warn!(self.log, "Error during rendering: {:?}", err);
+                warn!("Error during rendering: {:?}", err);
                 match err {
                     SwapBuffersError::AlreadySwapped => true,
                     SwapBuffersError::TemporaryFailure(err) => matches!(
@@ -896,15 +886,10 @@ impl AnvilState<UdevData> {
                 // However, if we need to do a copy, that might not be enough.
                 // (And without actual comparision to previous frames we cannot really know.)
                 // So lets ignore that in those cases to avoid thrashing performance.
-                trace!(
-                    self.log,
-                    "scheduling repaint timer immediately on {:?}",
-                    crtc
-                );
+                trace!("scheduling repaint timer immediately on {:?}", crtc);
                 Timer::immediate()
             } else {
                 trace!(
-                    self.log,
                     "scheduling repaint timer with delay {:?} on {:?}",
                     repaint_delay,
                     crtc
@@ -926,10 +911,7 @@ impl AnvilState<UdevData> {
         let device_backend = match self.backend_data.backends.get_mut(&dev_id) {
             Some(backend) => backend,
             None => {
-                error!(
-                    self.log,
-                    "Trying to render on non-existent backend {}", dev_id
-                );
+                error!("Trying to render on non-existent backend {}", dev_id);
                 return;
             }
         };
@@ -1017,7 +999,7 @@ impl AnvilState<UdevData> {
             let reschedule = match &result {
                 Ok(has_rendered) => !has_rendered,
                 Err(err) => {
-                    warn!(self.log, "Error during rendering: {:?}", err);
+                    warn!("Error during rendering: {:?}", err);
                     match err {
                         SwapBuffersError::AlreadySwapped => false,
                         SwapBuffersError::TemporaryFailure(err) => !matches!(
@@ -1046,7 +1028,6 @@ impl AnvilState<UdevData> {
                 let reschedule_duration =
                     Duration::from_millis((1_000_000f32 / output_refresh as f32) as u64);
                 trace!(
-                    self.log,
                     "reschedule repaint timer with delay {:?} on {:?}",
                     reschedule_duration,
                     crtc,
@@ -1208,7 +1189,7 @@ fn schedule_initial_render(
             SwapBuffersError::AlreadySwapped => {}
             SwapBuffersError::TemporaryFailure(err) => {
                 // TODO dont reschedule after 3(?) retries
-                warn!(logger, "Failed to submit page_flip: {}", err);
+                warn!("Failed to submit page_flip: {}", err);
                 let handle = evt_handle.clone();
                 evt_handle.insert_idle(move |data| {
                     schedule_initial_render(

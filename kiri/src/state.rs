@@ -4,6 +4,9 @@ use std::{
     time::Duration,
 };
 
+#[cfg(feature = "xwayland")]
+use crate::cursor::Cursor;
+use crate::{focus::FocusTarget, shell::WindowElement};
 use smithay::{
     backend::renderer::element::{default_primary_scanout_output_compare, RenderElementStates},
     delegate_compositor, delegate_data_device, delegate_fractional_scale,
@@ -71,15 +74,12 @@ use smithay::{
         },
     },
 };
-
-#[cfg(feature = "xwayland")]
-use crate::cursor::Cursor;
-use crate::{focus::FocusTarget, shell::WindowElement};
 #[cfg(feature = "xwayland")]
 use smithay::{
     utils::Size,
     xwayland::{X11Wm, XWayland, XWaylandEvent},
 };
+use tracing::{debug, error, info, trace, warn};
 
 pub struct CalloopData<BackendData: Backend + 'static> {
     pub state: AnvilState<BackendData>,
@@ -425,7 +425,7 @@ impl<BackendData: Backend + 'static> AnvilState<BackendData> {
                     };
                 })
                 .expect("Failed to init wayland socket source");
-            info!(log, "Listening on wayland socket"; "name" => socket_name.clone());
+            info!(name = ?socket_name.clone(),"Listening on wayland socket");
             ::std::env::set_var("WAYLAND_DISPLAY", &socket_name);
             Some(socket_name)
         } else {
@@ -525,8 +525,8 @@ impl<BackendData: Backend + 'static> AnvilState<BackendData> {
             });
             if let Err(e) = ret {
                 error!(
-                    log,
-                    "Failed to insert the XWaylandSource into the event loop: {}", e
+                    "Failed to insert the XWaylandSource into the event loop: {}",
+                    e
                 );
             }
             xwayland

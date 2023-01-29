@@ -1,11 +1,10 @@
 use clap::{Parser, ValueEnum};
 use color_eyre::Result;
-use slog::{crit, o, Drain, Logger};
-use tracing::{debug, log};
+use tracing::{debug, instrument::WithSubscriber, log};
 
 #[derive(Parser)]
 pub struct Cli {
-    #[clap(long,short = 'B')]
+    #[clap(long, short = 'B')]
     backend: DisplayBackend,
 }
 
@@ -19,20 +18,28 @@ pub enum DisplayBackend {
     X11,
 }
 
+fn log() -> ::slog::Logger {
+    use tracing_slog::TracingSlogDrain;
+    let drain = TracingSlogDrain;
+    ::slog::Logger::root(drain, slog::o!())
+}
+
 fn main() -> Result<()> {
     color_eyre::config::HookBuilder::default()
         .add_default_filters()
         .install()?;
-    // slog_stdlog::init()?;
+
+    let cli = Cli::parse();
+    let log = log();
+    let _guard = slog_scope::set_global_logger(log.clone());
 
     pretty_env_logger::formatted_builder()
-        .filter_level(log::LevelFilter::Trace)
+        .filter_level(tracing::log::LevelFilter::Debug)
         .init();
-    let cli = Cli::parse();
 
-    let drain = tracing_slog::TracingSlogDrain;
-    let log = Logger::root(drain, o!());
-    let _guard = slog_scope::set_global_logger(log.clone());
+    // let log = log.clone();
+    // todo: slog-tracing bridge doesn't work
+
     match cli.backend {
         #[cfg(feature = "winit")]
         DisplayBackend::Winit => {

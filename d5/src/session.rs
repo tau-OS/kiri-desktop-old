@@ -77,9 +77,14 @@ pub async fn new_session(config: Config) -> Result<()> {
     let listener = event.listen();
     let session = D5 { quit_event: event };
 
-    // let handle = crate::proc::BusHandle::from_interface(session, "com.fyralabs.d5".to_owned(), "/com/fyralabs/d5".to_owned()).await?;
+    let handle = crate::proc::BusHandle::from_interface(
+        session,
+        "com.fyralabs.d5".to_owned(),
+        "/com/fyralabs/d5".to_owned(),
+    )
+    .await?;
     // object server
-    // crate::proc::HandleManager::fetch().add_handle(handle);
+    crate::proc::HandleManager::fetch().add_handle(handle);
 
     // tokio select wait for listener signal or wait for cmd to finish
     tokio::select! {
