@@ -1,13 +1,13 @@
 //! d5 - the Kiri session manager
 //! This is the main entry point for the d5 binary.
 //! It does some fancy dbus stuff and then starts the main loop.
+mod cli;
+mod config;
+mod env;
+mod interface;
 mod notify;
 mod proc;
-mod interface;
-mod env;
-mod cli;
 mod session;
-mod config;
 
 use color_eyre::Result;
 use tracing::{debug, log};
@@ -31,7 +31,6 @@ async fn main() -> Result<()> {
     // tracing_subscriber::registry().with(tracing_journald::layer().unwrap()).init();
     // let conn = ConnectionBuilder::session()?.build().await?;
     // conn.monitor_activity().await;
-
 
     // futures::pending!();
 

@@ -29,7 +29,6 @@ impl BusHandle {
         name: String,
         path: String,
     ) -> Result<Self> {
-
         let s = tracing::span!(tracing::Level::TRACE, "from_interface", name = %name, path = %path);
         let _e = s.enter();
         let conn = ConnectionBuilder::session()?
@@ -80,7 +79,12 @@ impl HandleManager {
         });
     }
 
-    pub async fn gen_handle<T: Interface>(&mut self, interface: T, name: String, path: String) -> Result<()> {
+    pub async fn gen_handle<T: Interface>(
+        &mut self,
+        interface: T,
+        name: String,
+        path: String,
+    ) -> Result<()> {
         self.add_handle(BusHandle::from_interface(interface, name, path).await?);
         Ok(())
     }

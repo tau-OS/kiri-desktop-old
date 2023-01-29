@@ -1,7 +1,7 @@
 //! CLI interface for d5
 
-use color_eyre::Result;
 use clap::{Parser, ValueEnum};
+use color_eyre::Result;
 // enum for display mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum DisplayMode {
@@ -9,19 +9,15 @@ pub enum DisplayMode {
     Wayland,
 }
 
-
-
-
 #[derive(Parser)]
 pub struct D5Entrypoint {
     // no subcommands, because it literally just launches a systemd user target
     // session manager is fun
-
     /// systemd target to launch
     // #[clap(short, long, required = true)]
     // pub target: String,
 
-    #[clap(short,long,required = true)]
+    #[clap(short, long, required = true)]
     pub session: String,
 
     /// Display mode: either "x11" or "wayland"
@@ -31,7 +27,6 @@ pub struct D5Entrypoint {
 }
 
 /// Parse the CLI arguments
-
 
 pub async fn entrypoint() -> Result<()> {
     let args = D5Entrypoint::parse();

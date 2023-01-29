@@ -1,19 +1,51 @@
 [package]
-name = "kiri"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Victor Berger <victor.berger@m4x.org>", "Drakulix (Victoria Brekenfeld)"]
+edition = "2018"
+license = "MIT"
+name = "anvil"
+publish = false
+version = "0.0.1"
 
 [dependencies]
-clap = { version = "4.1.1", features = ["derive", "env"] }
-color-eyre = "0.6.2"
-directories = "4.0.1"
-pretty_env_logger = "0.4.0"
-serde = { version = "1.0.152", features = ["derive"] }
-slog = "2.7.0"
-smithay = { git = "https://github.com/Smithay/smithay", version = "0.3.0" }
+bitflags = "1.2.1"
+fps_ticker = {version = "1.0.0", optional = true}
+image = {version = "0.24.0", default-features = false, optional = true}
+rand = "0.8"
+slog = {version = "2.1.1"}
+slog-async = "2.2"
+slog-scope = "4.4.0"
+slog-stdlog = "4.1.0"
+slog-term = "2.8"
+thiserror = "1"
+xcursor = {version = "0.3.3", optional = true}
+xkbcommon = "0.5.0"
+renderdoc = {version = "0.10.1", optional = true}
 tracing = { version = "0.1.37", features = ["log"] }
+clap = { version = "4.1.4", features = ["derive"] }
+color-eyre = "0.6.2"
 tracing-slog = "0.2.0"
-wayland-protocols = "0.30.0"
-wayland-server = { version = "0.30.0", features = ["log"] }
+pretty_env_logger = "0.4.0"
+
+[dependencies.smithay]
+default-features = false
+features = ["desktop", "wayland_frontend", "slog-stdlog"]
+git = "https://github.com/smithay/smithay"
+
+[dependencies.x11rb]
+default-features = false
+features = ["composite"]
+optional = true
+version = "0.11.1"
+
+[build-dependencies]
+gl_generator = "0.14"
+
+[features]
+debug = ["fps_ticker", "image/png", "renderdoc"]
+default = ["egl", "winit", "x11", "udev", "xwayland"]
+egl = ["smithay/use_system_lib", "smithay/backend_egl"]
+test_all_features = ["default", "debug"]
+udev = ["smithay/backend_libinput", "smithay/backend_udev", "smithay/backend_drm", "smithay/backend_gbm", "smithay/backend_egl", "smithay/backend_session_libseat", "image", "smithay/renderer_gl", "smithay/renderer_multi", "xcursor"]
+winit = ["smithay/backend_winit"]
+x11 = ["smithay/backend_x11", "x11rb", "egl", "smithay/renderer_gl"]
+xwayland = ["smithay/xwayland", "x11rb", "smithay/x11rb_event_source"]

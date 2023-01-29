@@ -12,7 +12,7 @@
         groups: wheel
         append: true
 
-    - name: Install LightDM
+    - name: Install Packages
       become: true
       ansible.builtin.dnf:
         name:
@@ -20,7 +20,9 @@
           - lightdm-gtk-greeter
           - "@Basic Desktop"
           - nano
-          - sway
+          - weston
+          - htop
+          - gnome-control-center
         state: present
 
     - name: Enable LightDM

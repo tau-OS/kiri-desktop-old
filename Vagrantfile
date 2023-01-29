@@ -10,9 +10,9 @@ Vagrant.configure("2") do |config|
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
 
-  config.hostmanager.enabled = true
-  config.hostmanager.manage_host = true
-  config.hostmanager.manage_guest = true
+  # config.hostmanager.enabled = true
+  # config.hostmanager.manage_host = true
+  # config.hostmanager.manage_guest = true
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "generic/fedora37"
@@ -35,7 +35,7 @@ Vagrant.configure("2") do |config|
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  config.vm.network :public_network, :dev => "virbr0", :mode => "bridge", :type => "bridge"
+  # config.vm.network :public_network, :dev => "virbr0", :mode => "bridge", :type => "bridge"
   config.vm.hostname = "uitest"
 
   # Create a public network, which generally matched to bridged network.
@@ -47,7 +47,7 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder "./target", "/usr/local/target", type: "sshfs"
+  config.vm.synced_folder "./target", "/usr/local/target"
   # config.vm.synced_folder ".", "/vagrant", disabled: false, type: "sshfs"
   
 
@@ -55,14 +55,14 @@ Vagrant.configure("2") do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-  config.vm.provider "libvirt" do |lv|
-    # Display the VirtualBox GUI when booting the machine
-    lv.cpus = 4
-    lv.graphics_type = "spice"
-    lv.video_type = "qxl"
-
-    # Customize the amount of memory on the VM:
-    lv.memory = 4096
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 4
+    vb.memory = 4096
+    vb.gui = true
+    # use VBoxSVGA
+    vb.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
+    # use 3D acceleration
+    vb.customize ["modifyvm", :id, "--accelerate3d", "on"]
   end
   #
   # View the documentation for the provider you are using for more

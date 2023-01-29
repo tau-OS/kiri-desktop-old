@@ -1,4 +1,4 @@
 [session]
-leader = "sway"
+leader = "/usr/local/target/debug/anvil --backend tty-udev"
 
 [services]

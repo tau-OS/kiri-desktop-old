@@ -1,23 +1,22 @@
 //! logind session management
 
-use ashpd::zbus::dbus_interface;
-use futures::{pending, StreamExt};
-use logind_zbus::session::SessionProxy;
-use logind_zbus::manager::{ManagerProxy, self};
-use zbus::ObjectServer;
-use zbus::fdo::DBusProxy;
-use zbus_systemd::systemd1::ManagerProxy as SystemdManagerProxy;
 use color_eyre::Result;
-use tracing::{debug, info};
 use event_listener::Event;
+use futures::{pending, StreamExt};
+use logind_zbus::manager::{self, ManagerProxy};
+use logind_zbus::session::SessionProxy;
+use tracing::{debug, info};
+use zbus::dbus_interface;
+use zbus::fdo::DBusProxy;
+use zbus::ObjectServer;
+use zbus_systemd::systemd1::ManagerProxy as SystemdManagerProxy;
 
 use crate::config::Config;
 
 // catch the signal when ending session
 struct D5 {
-    pub quit_event: Event
+    pub quit_event: Event,
 }
-
 
 #[dbus_interface(name = "com.fyralabs.d5")]
 impl D5 {
@@ -35,7 +34,6 @@ pub async fn new_session(config: Config) -> Result<()> {
 
     // let systemd_manager = SystemdManagerProxy::new(&conn).await?;
     // let target = systemd_manager.start_unit(unit, "replace".to_string()).await?;
-
 
     // systemd: watch this unit
     // let mut systemd_manager = SystemdManagerProxy::new(&conn).await?;
@@ -57,7 +55,6 @@ pub async fn new_session(config: Config) -> Result<()> {
         .spawn()
         .expect("Failed to spawn command");
 
-
     // activate session
     // manager.activate_session(&session_id).await?;
     let sys = zbus::Connection::system().await?;
@@ -66,7 +63,8 @@ pub async fn new_session(config: Config) -> Result<()> {
 
     let sess = SessionProxy::builder(&sys)
         .path("/org/freedesktop/login1/session/auto")?
-        .build().await?;
+        .build()
+        .await?;
     let id = sess.id().await?;
     debug!("Session ID: {:?}", id);
 
@@ -77,14 +75,11 @@ pub async fn new_session(config: Config) -> Result<()> {
 
     let event = Event::new();
     let listener = event.listen();
-    let session = D5 {
-        quit_event: event
-    };
-    
+    let session = D5 { quit_event: event };
 
-    let handle = crate::proc::BusHandle::from_interface(session, "com.fyralabs.d5".to_owned(), "/com/fyralabs/d5".to_owned()).await?;
+    // let handle = crate::proc::BusHandle::from_interface(session, "com.fyralabs.d5".to_owned(), "/com/fyralabs/d5".to_owned()).await?;
     // object server
-    crate::proc::HandleManager::fetch().add_handle(handle);
+    // crate::proc::HandleManager::fetch().add_handle(handle);
 
     // tokio select wait for listener signal or wait for cmd to finish
     tokio::select! {

@@ -3,7 +3,3 @@ members = [
     "d5",
     "kiri",
 ]
-
-default-members = [
-    "d5"
-]

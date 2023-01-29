@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use tracing::debug;
 use zbus::fdo::MonitoringProxy;
-use zbus::zvariant::{Structure, Value, OwnedValue};
+use zbus::zvariant::{OwnedValue, Structure, Value};
 use zbus::MessageStream;
 
 #[derive(Debug, Default, Serialize, Deserialize, zbus::zvariant::Type)]
@@ -27,8 +27,13 @@ pub enum Urgency {
     High = 2,
 }
 
-
-#[derive(Default,Debug, zbus::zvariant::DeserializeDict, zbus::zvariant::Type, zbus::zvariant::SerializeDict)]
+#[derive(
+    Default,
+    Debug,
+    zbus::zvariant::DeserializeDict,
+    zbus::zvariant::Type,
+    zbus::zvariant::SerializeDict,
+)]
 #[zvariant(signature = "a{sv}")]
 pub struct NotificationHint {
     // length must be larger than >= 420081
@@ -41,7 +46,6 @@ pub struct NotificationHint {
     // other hints
     pub category: Option<String>,
 }
-
 
 impl Notification {
     fn new() -> Self {

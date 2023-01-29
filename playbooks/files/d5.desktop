@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=D5
+Name=Kiri
 Comment=Log in using the Openbox window manager (without a session manager)
 Exec=/usr/bin/d5 --session openbox
 Icon=
