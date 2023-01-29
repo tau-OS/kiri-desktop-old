@@ -5,7 +5,7 @@ use tracing::{debug, log};
 
 #[derive(Parser)]
 pub struct Cli {
-    #[clap(long)]
+    #[clap(long,short = 'B')]
     backend: DisplayBackend,
 }
 
@@ -37,17 +37,17 @@ fn main() -> Result<()> {
         #[cfg(feature = "winit")]
         DisplayBackend::Winit => {
             slog::info!(log, "Starting anvil with winit backend");
-            anvil::winit::run_winit(log);
+            kiri::winit::run_winit(log);
         }
         #[cfg(feature = "udev")]
         DisplayBackend::TtyUdev => {
             slog::info!(log, "Starting anvil on a tty using udev");
-            anvil::udev::run_udev(log);
+            kiri::udev::run_udev(log);
         }
         #[cfg(feature = "x11")]
         DisplayBackend::X11 => {
             slog::info!(log, "Starting anvil with x11 backend");
-            anvil::x11::run_x11(log);
+            kiri::x11::run_x11(log);
         }
     }
     Ok(())

@@ -933,7 +933,7 @@ fn process_keyboard_shortcut(modifiers: ModifiersState, keysym: Keysym) -> Optio
         ))
     } else if modifiers.logo && keysym == xkb::KEY_Return {
         // run terminal
-        Some(KeyAction::Run("xterm".into()))
+        Some(KeyAction::Run("weston-terminal".into()))
     } else if modifiers.logo && (xkb::KEY_1..=xkb::KEY_9).contains(&keysym) {
         Some(KeyAction::Screen((keysym - xkb::KEY_1) as usize))
     } else if modifiers.logo && modifiers.shift && keysym == xkb::KEY_M {
