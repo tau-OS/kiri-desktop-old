@@ -523,7 +523,7 @@ fn scan_connectors(
                 PhysicalProperties {
                     size: (phys_w as i32, phys_h as i32).into(),
                     subpixel: Subpixel::Unknown,
-                    make: "Smithay".into(),
+                    make: "Kiri".into(),
                     model: "Generic DRM".into(),
                 },
                 None,

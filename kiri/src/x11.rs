@@ -176,7 +176,7 @@ pub fn run_x11(log: Logger) {
         PhysicalProperties {
             size: (0, 0).into(),
             subpixel: Subpixel::Unknown,
-            make: "Smithay".into(),
+            make: "Kiri".into(),
             model: "X11".into(),
         },
         log.clone(),

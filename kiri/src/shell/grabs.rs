@@ -12,6 +12,7 @@ use smithay::{
 };
 #[cfg(feature = "xwayland")]
 use smithay::{utils::Rectangle, xwayland::xwm::ResizeEdge as X11ResizeEdge};
+use tracing::debug;
 
 use super::{SurfaceData, WindowElement};
 use crate::{
@@ -173,6 +174,7 @@ impl<BackendData: Backend> PointerGrab<AnvilState<BackendData>> for ResizeSurfac
         _focus: Option<(FocusTarget, Point<i32, Logical>)>,
         event: &MotionEvent,
     ) {
+        debug!(?handle, ?event, "resize grab motion");
         // While the grab is active, no client has pointer focus
         handle.motion(data, None, event);
 
@@ -186,9 +188,12 @@ impl<BackendData: Backend> PointerGrab<AnvilState<BackendData>> for ResizeSurfac
 
         let mut new_window_width = self.initial_window_size.w;
         let mut new_window_height = self.initial_window_size.h;
+        let mut new_window_location = self.initial_window_location;
 
         let left_right = ResizeEdge::LEFT | ResizeEdge::RIGHT;
-        let top_bottom = ResizeEdge::TOP | ResizeEdge::BOTTOM;
+
+        // cappy: @lleyton save me, I actually failed set theory
+        
 
         if self.edges.intersects(left_right) {
             if self.edges.intersects(ResizeEdge::LEFT) {
@@ -198,12 +203,22 @@ impl<BackendData: Backend> PointerGrab<AnvilState<BackendData>> for ResizeSurfac
             new_window_width = (self.initial_window_size.w as f64 + dx) as i32;
         }
 
-        if self.edges.intersects(top_bottom) {
+        if self.edges.intersects(ResizeEdge::BOTTOM) {
             if self.edges.intersects(ResizeEdge::TOP) {
                 dy = -dy;
             }
 
             new_window_height = (self.initial_window_size.h as f64 + dy) as i32;
+        }
+
+        // todo: handle proper resizing of edges
+        if self.edges.intersects(ResizeEdge::TOP) {
+            new_window_height = (self.initial_window_size.h as f64 - dy) as i32;
+
+            dy = -dy;
+
+            // move window too
+            new_window_location.y = self.initial_window_location.y + (dy) as i32;
         }
 
         let (min_size, max_size) = if let Some(surface) = self.window.wl_surface() {

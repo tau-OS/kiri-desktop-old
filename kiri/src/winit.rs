@@ -89,7 +89,7 @@ pub fn run_winit(log: Logger) {
     let mut display = Display::new().unwrap();
 
     #[cfg_attr(not(feature = "egl"), allow(unused_mut))]
-    let (mut backend, mut winit) = match winit::init::<Gles2Renderer, _>(log.clone()) {
+    let (mut backend, mut winit) = match winit::init::<Gles2Renderer, _>(None) {
         Ok(ret) => ret,
         Err(err) => {
             error!("Failed to initialize Winit backend: {}", err);
@@ -107,10 +107,10 @@ pub fn run_winit(log: Logger) {
         PhysicalProperties {
             size: (0, 0).into(),
             subpixel: Subpixel::Unknown,
-            make: "Smithay".into(),
+            make: "Kiri".into(),
             model: "Winit".into(),
         },
-        log.clone(),
+        None,
     );
     let _global = output.create_global::<AnvilState<WinitData>>(&display.handle());
     output.change_current_state(
@@ -157,7 +157,7 @@ pub fn run_winit(log: Logger) {
             let global = state.create_global::<AnvilState<WinitData>, _>(
                 &display.handle(),
                 dmabuf_formats,
-                log.clone(),
+                None,
             );
             Some((state, global))
         } else {

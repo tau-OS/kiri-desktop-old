@@ -24,6 +24,7 @@ use smithay::{
         },
     },
 };
+use tracing::debug;
 
 use crate::{
     focus::FocusTarget,
@@ -96,6 +97,7 @@ impl<BackendData: Backend> XdgShellHandler for AnvilState<BackendData> {
         serial: Serial,
         edges: xdg_toplevel::ResizeEdge,
     ) {
+        debug!(?surface, ?seat, ?serial, ?edges, "Recieved Resize request");
         let seat: Seat<AnvilState<BackendData>> = Seat::from_resource(&seat).unwrap();
         // TODO: touch resize.
         let pointer = seat.get_pointer().unwrap();
