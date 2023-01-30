@@ -188,7 +188,6 @@ impl<BackendData: Backend> PointerGrab<AnvilState<BackendData>> for ResizeSurfac
 
         let mut new_window_width = self.initial_window_size.w;
         let mut new_window_height = self.initial_window_size.h;
-        let mut new_window_location = self.initial_window_location;
 
         let left_right = ResizeEdge::LEFT | ResizeEdge::RIGHT;
         let top_bottom = ResizeEdge::TOP | ResizeEdge::BOTTOM;
@@ -245,10 +244,39 @@ impl<BackendData: Backend> PointerGrab<AnvilState<BackendData>> for ResizeSurfac
                     state.size = Some(self.last_window_size);
                 });
                 xdg.send_configure();
+                if self.edges.intersects(ResizeEdge::TOP_LEFT) {
+                    let geometry = self.window.geometry();
+                    let mut location = data.space.element_location(&self.window).unwrap();
+
+                    if self.edges.intersects(ResizeEdge::LEFT) {
+                        location.x = self.initial_window_location.x
+                            + (self.initial_window_size.w - geometry.size.w);
+                    }
+                    if self.edges.intersects(ResizeEdge::TOP) {
+                        location.y = self.initial_window_location.y
+                            + (self.initial_window_size.h - geometry.size.h);
+                    }
+
+                    data.space.map_element(self.window.clone(), location, true);
+                }
             }
             #[cfg(feature = "xwayland")]
             WindowElement::X11(x11) => {
-                let location = data.space.element_location(&self.window).unwrap();
+                let mut location = data.space.element_location(&self.window).unwrap();
+                if self.edges.intersects(ResizeEdge::TOP_LEFT) {
+                    let geometry = self.window.geometry();
+
+                    if self.edges.intersects(ResizeEdge::LEFT) {
+                        location.x = self.initial_window_location.x
+                            + (self.initial_window_size.w - geometry.size.w);
+                    }
+                    if self.edges.intersects(ResizeEdge::TOP) {
+                        location.y = self.initial_window_location.y
+                            + (self.initial_window_size.h - geometry.size.h);
+                    }
+
+                    data.space.map_element(self.window.clone(), location, true);
+                }
                 x11.configure(Rectangle::from_loc_and_size(
                     location,
                     self.last_window_size,
