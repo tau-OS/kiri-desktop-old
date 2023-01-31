@@ -1,6 +1,9 @@
 use clap::{Parser, ValueEnum};
 use color_eyre::Result;
-use tracing::{debug, instrument::WithSubscriber, log};
+use tracing::metadata::LevelFilter;
+// use tracing_subscriber::fmt;
+use tracing_subscriber::prelude::*;
+use tracing_subscriber::EnvFilter;
 
 #[derive(Parser)]
 pub struct Cli {
@@ -33,8 +36,24 @@ fn main() -> Result<()> {
     let log = log();
     let _guard = slog_scope::set_global_logger(log.clone());
 
-    pretty_env_logger::formatted_builder()
-        .filter_level(tracing::log::LevelFilter::Debug)
+    let default_env = EnvFilter::builder()
+        .with_default_directive(LevelFilter::TRACE.into())
+        .from_env_lossy();
+
+    tracing_subscriber::FmtSubscriber::builder()
+        .with_level(true)
+        .with_file(true)
+        .with_thread_names(true)
+        .with_ansi(true)
+        .pretty()
+        .without_time()
+        .with_env_filter(default_env)
+        .finish()
+        .with(
+            tracing_journald::layer()
+                .unwrap()
+                .with_syslog_identifier("kiri".to_string()),
+        )
         .init();
 
     // let log = log.clone();

@@ -20,7 +20,7 @@ use smithay::{
         seat::WaylandFocus,
         shell::xdg::{
             Configure, PopupSurface, PositionerState, ToplevelSurface, XdgShellHandler,
-            XdgShellState, XdgToplevelSurfaceData,
+            XdgShellState, XdgToplevelSurfaceData, ToplevelConfigure, ToplevelState, ToplevelStateSet
         },
     },
 };

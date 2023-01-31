@@ -105,7 +105,7 @@ impl From<xdg_toplevel::ResizeEdge> for ResizeEdge {
 impl From<ResizeEdge> for xdg_toplevel::ResizeEdge {
     #[inline]
     fn from(x: ResizeEdge) -> Self {
-        use std::convert::TryFrom;
+        // use std::convert::TryFrom;
 
         Self::try_from(x.bits()).unwrap()
     }
@@ -302,6 +302,7 @@ impl<BackendData: Backend> PointerGrab<AnvilState<BackendData>> for ResizeSurfac
         handle: &mut PointerInnerHandle<'_, AnvilState<BackendData>>,
         event: &ButtonEvent,
     ) {
+        debug!(target: "anvil", "Button event: {:?}", event);
         handle.button(data, event);
         if handle.current_pressed().is_empty() {
             // No more buttons are pressed, release the grab.
@@ -400,6 +401,7 @@ impl<BackendData: Backend> PointerGrab<AnvilState<BackendData>> for ResizeSurfac
         handle: &mut PointerInnerHandle<'_, AnvilState<BackendData>>,
         details: AxisFrame,
     ) {
+        debug!(target: "anvil", "Pointer axis event: {:?}", details);
         handle.axis(data, details)
     }
 
