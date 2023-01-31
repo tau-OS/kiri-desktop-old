@@ -19,14 +19,14 @@ use smithay::{
 
 use slog::Logger;
 
-use super::state::GyakuState;
 use super::event_loop::EventLoopData;
+use super::state::GyakuState;
 
 pub fn init_winit(
-        event_loop: &mut EventLoop<EventLoopData>,
-        data: &mut EventLoopData,
-        log: Logger,
-        ) -> Result<(), Box<dyn std::error::Error>> {
+    event_loop: &mut EventLoop<EventLoopData>,
+    data: &mut EventLoopData,
+    log: Logger,
+) -> Result<(), Box<dyn std::error::Error>> {
     let display = &mut data.display;
     let state = &mut data.state;
 
@@ -38,9 +38,9 @@ pub fn init_winit(
     };
 
     let output = Output::new::<_>(
-            "winit".to_string(),
+        "winit".to_string(),
         PhysicalProperties {
-                size: (0, 0).into(),
+            size: (0, 0).into(),
             subpixel: Subpixel::Unknown,
             make: "Smithay".into(),
             model: "Winit".into(),
@@ -48,7 +48,12 @@ pub fn init_winit(
         log.clone(),
     );
     let _global = output.create_global::<GyakuState>(&display.handle());
-    output.change_current_state(Some(mode), Some(Transform::Flipped180), None, Some((0, 0).into()));
+    output.change_current_state(
+        Some(mode),
+        Some(Transform::Flipped180),
+        None,
+        Some((0, 0).into()),
+    );
     output.set_preferred(mode);
 
     state.space.map_output(&output, (0, 0));
@@ -58,42 +63,44 @@ pub fn init_winit(
     let mut full_redraw = 0u8;
 
     let timer = Timer::immediate();
-    event_loop.handle().insert_source(timer, move |_, _, data| {
-        winit_dispatch(
+    event_loop
+        .handle()
+        .insert_source(timer, move |_, _, data| {
+            winit_dispatch(
                 &mut backend,
-            &mut winit,
-            data,
-            &output,
-            &mut damage_tracked_renderer,
-            &mut full_redraw,
-            &log,
-        )
-        .unwrap();
-        TimeoutAction::ToDuration(Duration::from_millis(16))
-    })?;
+                &mut winit,
+                data,
+                &output,
+                &mut damage_tracked_renderer,
+                &mut full_redraw,
+                &log,
+            )
+            .unwrap();
+            TimeoutAction::ToDuration(Duration::from_millis(16))
+        })?;
 
     Ok(())
 }
 
 pub fn winit_dispatch(
-        backend: &mut WinitGraphicsBackend<Gles2Renderer>,
-        winit: &mut WinitEventLoop,
-        data: &mut EventLoopData,
-        output: &Output,
-        damage_tracked_renderer: &mut DamageTrackedRenderer,
-        full_redraw: &mut u8,
-        log: &Logger,
-        ) -> Result<(), Box<dyn std::error::Error>> {
+    backend: &mut WinitGraphicsBackend<Gles2Renderer>,
+    winit: &mut WinitEventLoop,
+    data: &mut EventLoopData,
+    output: &Output,
+    damage_tracked_renderer: &mut DamageTrackedRenderer,
+    full_redraw: &mut u8,
+    log: &Logger,
+) -> Result<(), Box<dyn std::error::Error>> {
     let display = &mut data.display;
     let state = &mut data.state;
 
     let res = winit.dispatch_new_events(|event| match event {
         WinitEvent::Resized { size, .. } => {
             output.change_current_state(
-                    Some(Mode {
-                        size,
-                        refresh: 60_000,
-                    }),
+                Some(Mode {
+                    size,
+                    refresh: 60_000,
+                }),
                 None,
                 None,
                 None,
@@ -104,7 +111,7 @@ pub fn winit_dispatch(
 
     if let Err(WinitError::WindowClosed) = res {
         // Stop the loop
-        state.loop_signal.stop();
+        // state.loop_signal.stop();
 
         return Ok(());
     } else {
@@ -118,7 +125,7 @@ pub fn winit_dispatch(
 
     backend.bind()?;
     smithay::desktop::space::render_output::<_, WaylandSurfaceRenderElement<Gles2Renderer>, _, _, _>(
-            output,
+        output,
         backend.renderer(),
         0,
         [&state.space],
@@ -131,8 +138,8 @@ pub fn winit_dispatch(
 
     state.space.elements().for_each(|window| {
         window.send_frame(
-                output,
-            state.start_time.elapsed(),
+            output,
+            data.start_time.elapsed(),
             Some(Duration::ZERO),
             |_, _| Some(output.clone()),
         )

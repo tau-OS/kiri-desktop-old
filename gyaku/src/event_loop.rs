@@ -12,6 +12,7 @@ use wayland_server::Display;
 pub struct EventLoopData {
     pub state: GyakuState,
     pub display: Display<GyakuState>,
+    pub start_time: std::time::Instant,
 }
 
 pub fn setup_listeners(

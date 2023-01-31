@@ -1,5 +1,8 @@
 use crate::state::GyakuState;
-use smithay::{delegate_compositor, wayland::compositor::CompositorHandler};
+use smithay::{
+    backend::renderer::utils::on_commit_buffer_handler, delegate_compositor,
+    wayland::compositor::CompositorHandler,
+};
 use tracing::instrument;
 
 impl CompositorHandler for GyakuState {
@@ -12,7 +15,8 @@ impl CompositorHandler for GyakuState {
         &mut self,
         surface: &smithay::reexports::wayland_server::protocol::wl_surface::WlSurface,
     ) {
-        todo!()
+        on_commit_buffer_handler(surface);
+        // ! Soft TODO
     }
 }
 

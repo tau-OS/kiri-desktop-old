@@ -1,5 +1,6 @@
 use slog::Logger;
 use smithay::{
+    delegate_output,
     desktop::{Space, Window},
     input::SeatState,
     wayland::{
@@ -41,6 +42,8 @@ impl GyakuState {
         }
     }
 }
+
+delegate_output!(GyakuState);
 
 // Client state... might want to move this to another file for cleaniness later
 

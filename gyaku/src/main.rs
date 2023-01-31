@@ -7,10 +7,12 @@ use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 use wayland_server::Display;
 
+use crate::winit_temp::init_winit;
+
 mod event_loop;
 mod handlers;
 mod state;
-//mod winit_temp;
+mod winit_temp;
 
 #[derive(Parser)]
 pub struct Cli {
@@ -67,10 +69,16 @@ fn main() -> Result<()> {
     let mut display: Display<state::GyakuState> = Display::new()?;
     let state = state::GyakuState::new(&mut display, log.clone());
 
-    let mut data = event_loop::EventLoopData { state, display };
+    let mut data = event_loop::EventLoopData {
+        state,
+        display,
+        start_time: std::time::Instant::now(),
+    };
 
     let address = event_loop::setup_listeners(&mut ev, &mut data)?;
     println!("listening on {}", address.into_string().unwrap());
+
+    init_winit(&mut ev, &mut data, log).unwrap();
 
     ev.run(None, &mut data, move |_| {
         // Smallvil is running
