@@ -8,8 +8,6 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
 
   cargo_bloat:
     runs-on: ubuntu-latest
