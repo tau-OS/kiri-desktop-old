@@ -4,13 +4,11 @@ use smithay::{
     input::{Seat, SeatState},
     reexports::calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction},
     wayland::{
-        compositor::CompositorState, data_device::DataDeviceState, shm::ShmState,
-        socket::ListeningSocketSource,
+        compositor::CompositorState, data_device::DataDeviceState, shell::xdg::XdgShellState,
+        shm::ShmState, socket::ListeningSocketSource,
     },
 };
 use tracing::instrument;
-use std::os::fd::AsRawFd;
-use std::sync::Arc;
 use wayland_server::{
     backend::{ClientData, ClientId, DisconnectReason},
     Display,
@@ -18,6 +16,7 @@ use wayland_server::{
 /// State of the compositor
 pub struct GyakuState {
     pub(crate) compositor_state: CompositorState,
+    pub(crate) xdg_shell_state: XdgShellState,
     pub(crate) shm_state: ShmState,
     pub(crate) seat_state: SeatState<Self>,
     pub(crate) data_device_state: DataDeviceState,
@@ -32,6 +31,7 @@ impl GyakuState {
 
         Self {
             compositor_state: CompositorState::new::<Self, _>(&display_handle, log.clone()),
+            xdg_shell_state: XdgShellState::new::<Self, _>(&display_handle, log.clone()),
             shm_state: ShmState::new::<Self, _>(&display_handle, vec![], log.clone()),
             seat_state: SeatState::new(),
             data_device_state: DataDeviceState::new::<Self, _>(&display_handle, log.clone()),
