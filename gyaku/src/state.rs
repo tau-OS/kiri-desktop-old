@@ -1,6 +1,7 @@
 use color_eyre::Result;
 use slog::Logger;
 use smithay::{
+    desktop::{Space, Window},
     input::{Seat, SeatState},
     reexports::calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction},
     wayland::{
@@ -21,6 +22,7 @@ pub struct GyakuState {
     pub(crate) seat_state: SeatState<Self>,
     pub(crate) data_device_state: DataDeviceState,
 
+    pub(crate) space: Space<Window>,
     pub(crate) log: Logger,
     //    pub(crate) seat: Seat<Self>,
 }
@@ -36,6 +38,7 @@ impl GyakuState {
             seat_state: SeatState::new(),
             data_device_state: DataDeviceState::new::<Self, _>(&display_handle, log.clone()),
 
+            space: Space::new(log.clone()),
             log,
         }
     }

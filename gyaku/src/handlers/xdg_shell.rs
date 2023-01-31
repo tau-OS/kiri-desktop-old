@@ -1,4 +1,4 @@
-use smithay::{delegate_xdg_shell, wayland::shell::xdg::XdgShellHandler};
+use smithay::{delegate_xdg_shell, desktop::Window, wayland::shell::xdg::XdgShellHandler};
 
 use crate::state::GyakuState;
 
@@ -8,7 +8,8 @@ impl XdgShellHandler for GyakuState {
     }
 
     fn new_toplevel(&mut self, surface: smithay::wayland::shell::xdg::ToplevelSurface) {
-        todo!()
+        let window = Window::new(surface);
+        self.space.map_element(window, (0, 0), true);
     }
 
     fn new_popup(
