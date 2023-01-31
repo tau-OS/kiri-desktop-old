@@ -1,12 +1,10 @@
-use color_eyre::Result;
 use slog::Logger;
 use smithay::{
     desktop::{Space, Window},
-    input::{Seat, SeatState},
-    reexports::calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction},
+    input::SeatState,
     wayland::{
         compositor::CompositorState, data_device::DataDeviceState, shell::xdg::XdgShellState,
-        shm::ShmState, socket::ListeningSocketSource,
+        shm::ShmState,
     },
 };
 use tracing::instrument;
