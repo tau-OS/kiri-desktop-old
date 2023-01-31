@@ -10,6 +10,7 @@ use smithay::{
         X11Surface, X11Wm, XwmHandler,
     },
 };
+use tracing::debug;
 
 use crate::{state::Backend, AnvilState, CalloopData};
 
@@ -44,6 +45,7 @@ impl<BackendData: Backend> XwmHandler for CalloopData<BackendData> {
         place_new_window(&mut self.state.space, &window, true);
         let bbox = self.state.space.element_bbox(&window).unwrap();
         let WindowElement::X11(xsurface) = &window else { unreachable!() };
+        debug!(?xsurface, "X Surface");
         xsurface.configure(Some(bbox)).unwrap();
         window.set_ssd(!xsurface.is_decorated());
     }

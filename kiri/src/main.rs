@@ -7,7 +7,7 @@ use tracing_subscriber::EnvFilter;
 
 #[derive(Parser)]
 pub struct Cli {
-    #[clap(long, short = 'B')]
+    #[clap(long, short = 'B', default_value = "auto")]
     backend: DisplayBackend,
 }
 
@@ -19,6 +19,7 @@ pub enum DisplayBackend {
     TtyUdev,
     #[cfg(feature = "x11")]
     X11,
+    Auto,
 }
 
 fn log() -> ::slog::Logger {
@@ -74,6 +75,18 @@ fn main() -> Result<()> {
         DisplayBackend::X11 => {
             slog::info!(log, "Starting anvil with x11 backend");
             kiri::x11::run_x11(log);
+        }
+        _ => {
+            // auto-detect backend
+            if std::env::var_os("DISPLAY").is_some()
+                || std::env::var_os("WAYLAND_DISPLAY").is_some()
+            {
+                slog::info!(log, "Starting anvil with winit backend");
+                kiri::winit::run_winit(log);
+            } else {
+                slog::info!(log, "Starting anvil on a tty using udev");
+                kiri::udev::run_udev(log);
+            }
         }
     }
     Ok(())

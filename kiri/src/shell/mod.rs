@@ -33,6 +33,7 @@ use crate::CalloopData;
 
 mod element;
 mod grabs;
+mod xdg_shell;
 pub(crate) mod ssd;
 #[cfg(feature = "xwayland")]
 mod x11;

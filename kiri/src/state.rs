@@ -293,6 +293,7 @@ impl<BackendData: Backend> XdgDecorationHandler for AnvilState<BackendData> {
             .find(|window| matches!(window, WindowElement::Wayland(w) if w.toplevel() == &toplevel))
         {
             toplevel.with_pending_state(|state| {
+                
                 state.decoration_mode = Some(match mode {
                     DecorationMode::ServerSide => {
                         w.set_ssd(true);
