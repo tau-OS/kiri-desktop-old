@@ -2,10 +2,10 @@ use clap::{Parser, ValueEnum};
 use color_eyre::Result;
 use tracing::metadata::LevelFilter;
 // use tracing_subscriber::fmt;
+use smithay::reexports::calloop::EventLoop;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 use wayland_server::Display;
-use smithay::reexports::calloop::EventLoop;
 
 mod event_loop;
 mod handlers;
@@ -75,8 +75,6 @@ fn main() -> Result<()> {
     ev.run(None, &mut data, move |_| {
         // Smallvil is running
     })?;
-
-
 
     // match cli.backend {
     //     DisplayBackend::Winit => {
