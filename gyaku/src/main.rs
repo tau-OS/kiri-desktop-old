@@ -46,11 +46,11 @@ fn main() -> Result<()> {
         .from_env_lossy();
 
     tracing_subscriber::FmtSubscriber::builder()
+        .pretty()
         .with_level(true)
         .with_file(true)
         .with_thread_names(true)
         .with_ansi(true)
-        .pretty()
         .without_time()
         .with_env_filter(default_env)
         .finish()

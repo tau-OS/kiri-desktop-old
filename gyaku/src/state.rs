@@ -8,6 +8,7 @@ use smithay::{
         socket::ListeningSocketSource,
     },
 };
+use tracing::instrument;
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
 use wayland_server::{
@@ -46,7 +47,9 @@ impl GyakuState {
 pub struct ClientState;
 impl ClientData for ClientState {
     /// Notification that a client was initialized
+    #[instrument(skip(self))]
     fn initialized(&self, _client_id: ClientId) {}
     /// Notification that a client is disconnected
+    #[instrument(skip(self))]
     fn disconnected(&self, _client_id: ClientId, _reason: DisconnectReason) {}
 }
