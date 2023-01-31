@@ -40,8 +40,6 @@ version = "0.11.1"
 [build-dependencies]
 gl_generator = "0.14"
 
-[profile.dev]
-opt-level = 2
 
 
 [features]

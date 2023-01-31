@@ -19,8 +19,9 @@ use smithay::{
         compositor::with_states,
         seat::WaylandFocus,
         shell::xdg::{
-            Configure, PopupSurface, PositionerState, ToplevelSurface, XdgShellHandler,
-            XdgShellState, XdgToplevelSurfaceData, ToplevelConfigure, ToplevelState, ToplevelStateSet
+            Configure, PopupSurface, PositionerState, ToplevelConfigure, ToplevelState,
+            ToplevelStateSet, ToplevelSurface, XdgShellHandler, XdgShellState,
+            XdgToplevelSurfaceData,
         },
     },
 };
