@@ -15,7 +15,7 @@ jobs:
       - name: Download dependencies
         run: sudo apt install -y pkg-config libwayland-dev
       - name: Cache Rust compilation
-        uses: metalbear-co/sccache-action@v1
+        uses: metalbear-co/sccache-action@v1.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v3
