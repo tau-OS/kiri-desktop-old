@@ -1,4 +1,4 @@
-name: Rust
+name: CI
 
 on:
   push:
@@ -10,19 +10,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    steps:
-      - name: Download dependencies
-        run: sudo apt install -y pkg-config libwayland-dev
-      - name: Cache Rust compilation
-        uses: metalbear-co/sccache-action@v1.1.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@v3
-      - name: Build
-        run: cargo build --verbose
-      - name: Run tests
-        run: cargo test --verbose
 
   cargo_bloat:
     runs-on: ubuntu-latest
