@@ -11,7 +11,7 @@ use smithay::{
     },
     utils::SERIAL_COUNTER,
 };
-use tracing::{debug, info};
+use tracing::{debug, info, trace};
 use wayland_server::protocol::wl_surface::WlSurface;
 
 use crate::{state::GyakuState, util::input::surface_under_pointer};
@@ -28,6 +28,9 @@ impl GyakuState {
             InputEvent::PointerMotionAbsolute { event, .. } => {
                 self.handle_pointer_motion_absolute_event::<I>(event)
             }
+            InputEvent::PointerAxis { event } => {
+                self.handle_pointer_scroll_event::<I>(event)
+            }
             // todo axis is mouse scroll
             // InputEvent::DeviceRemoved { device, .. } => {
             //     println!("device removed: {:?}", device.name());
@@ -36,6 +39,17 @@ impl GyakuState {
             // _ => trace!("unhandled input event"),
             _ => {}
         }
+    }
+
+    fn handle_pointer_scroll_event<I: InputBackend>(&mut self, event: I::PointerAxisEvent) {
+        let serial = SERIAL_COUNTER.next_serial();
+        let time = Event::time_msec(&event);
+
+        let pointer = self.seat.get_pointer().unwrap();
+
+        // We will actually invert the Y axis here, because that's what most users expect
+        // todo: Add an option for "natural scrolling" (don't actually invert)
+        
     }
 
     fn handle_keyboard_key_event<I: InputBackend>(&mut self, event: I::KeyboardKeyEvent) {
@@ -69,6 +83,8 @@ impl GyakuState {
                 // FilterResult::Forward
             },
         );
+
+        // todo: ok... now to actually send these events to a client, so it actually does something
     }
 
     fn handle_device_added_event<I: InputBackend>(&mut self, device: I::Device) {
@@ -86,6 +102,11 @@ impl GyakuState {
         if device.has_capability(DeviceCapability::Pointer) {
             info!("device has pointer capability");
             self.seat.add_pointer();
+        }
+
+        if device.has_capability(DeviceCapability::Touch) {
+            info!("device has touch capability");
+            self.seat.add_touch();
         }
     }
 
@@ -112,7 +133,7 @@ impl GyakuState {
                     window.toplevel().send_configure();
                 });
 
-                debug!(window = ?window, "focusing desktop window");
+                info!(window = ?window, "focusing desktop window");
             } else {
                 self.space.elements().for_each(|window| {
                     window.set_activated(false);
@@ -122,7 +143,7 @@ impl GyakuState {
                     kb.set_focus(self, Option::<WlSurface>::None, serial);
                 }
 
-                debug!("unfocusing all windows");
+                info!("unfocusing all windows");
             }
         };
 
@@ -151,10 +172,12 @@ impl GyakuState {
         let position =
             event.position_transformed(output_geometry.size) + output_geometry.loc.to_f64();
 
-        debug!(new_position = ?position, "Pointer motion absolute event recieved");
+        // commenting this out, because logging this is spammy and kills performance
+        // trace!(target: "pointer_location", new_position = ?position, "Pointer motion absolute event recieved");
 
         let under = surface_under_pointer(&self, &pointer);
 
+        // todo: this is actually kinda slow, we should probably make this async somehow or only fetch x times per second
         pointer.motion(
             self,
             under,
@@ -164,7 +187,5 @@ impl GyakuState {
                 time: event.time_msec(),
             },
         );
-
-        println!("pointer motion absolute event sdfsdf")
     }
 }

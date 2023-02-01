@@ -1,5 +1,6 @@
 use clap::{Parser, ValueEnum};
 use color_eyre::Result;
+use slog::Drain;
 use tracing::metadata::LevelFilter;
 // use tracing_subscriber::fmt;
 use smithay::reexports::calloop::EventLoop;
@@ -32,7 +33,7 @@ pub enum DisplayBackend {
 fn log() -> ::slog::Logger {
     use tracing_slog::TracingSlogDrain;
     let drain = TracingSlogDrain;
-    ::slog::Logger::root(drain, slog::o!())
+    ::slog::Logger::root(slog::LevelFilter::new(drain, slog::Level::Info).fuse(), slog::o!())
 }
 
 fn main() -> Result<()> {
@@ -42,11 +43,13 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
     let log = log();
-    let _guard = slog_scope::set_global_logger(log.clone());
+    // let _guard = slog_scope::set_global_logger(log.clone());
 
     let default_env = EnvFilter::builder()
-        .with_default_directive(LevelFilter::TRACE.into())
-        .from_env_lossy();
+        // .with_default_directive(LevelFilter::INFO.into())
+        .parse("trace,smithay::backend::renderer::gles2=off")?;
+        // .from_env_lossy();
+    // smithay::backend::renderer::gles2
 
     tracing_subscriber::FmtSubscriber::builder()
         .pretty()
@@ -79,7 +82,7 @@ fn main() -> Result<()> {
     let address = event_loop::setup_listeners(&mut ev, &mut data)?;
     println!("listening on {}", address.into_string().unwrap());
 
-    init_winit(&mut ev, &mut data, log).unwrap();
+    init_winit(&mut ev, &mut data, log.clone()).unwrap();
 
     ev.run(None, &mut data, move |_| {
         // Smallvil is running

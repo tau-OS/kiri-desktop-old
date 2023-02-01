@@ -30,7 +30,7 @@ pub fn init_winit(
     let display = &mut data.display;
     let state = &mut data.state;
 
-    let (mut backend, mut winit) = winit::init(log.clone())?;
+    let (mut backend, mut winit) = winit::init(None)?;
 
     let mode = Mode {
         size: backend.window_size().physical_size,
@@ -45,7 +45,7 @@ pub fn init_winit(
             make: "Smithay".into(),
             model: "Winit".into(),
         },
-        log.clone(),
+        None,
     );
     let _global = output.create_global::<GyakuState>(&display.handle());
     output.change_current_state(
@@ -133,7 +133,7 @@ pub fn winit_dispatch(
         &[],
         damage_tracked_renderer,
         [0.1, 0.1, 0.1, 1.0],
-        log.clone(),
+        None,
     )?;
     backend.submit(Some(&[damage]))?;
 
