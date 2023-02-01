@@ -106,6 +106,7 @@ pub fn winit_dispatch(
                 None,
             );
         }
+        WinitEvent::Input(event) => state.dispatch_input_event(event),
         _ => (),
     });
 
