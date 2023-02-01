@@ -1,104 +1,92 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'd5'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=d5",
-                    "--package=d5"
-                ],
-                "filter": {
-                    "name": "d5",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'd5'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=d5",
-                    "--package=d5"
-                ],
-                "filter": {
-                    "name": "d5",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in library 'kiri'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--lib",
-                    "--package=kiri"
-                ],
-                "filter": {
-                    "name": "kiri",
-                    "kind": "lib"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'kiri'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=kiri",
-                    "--package=kiri",
-
-                ],
-                "filter": {
-                    "name": "kiri",
-                    "kind": "bin"
-                }
-            },
-            "args": [
-                "--backend=winit",
-            ],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'kiri'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=kiri",
-                    "--package=kiri"
-                ],
-                "filter": {
-                    "name": "kiri",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'gyaku'",
+      "cargo": {
+        "args": ["build", "--bin=gyaku", "--package=gyaku"],
+        "filter": {
+          "name": "gyaku",
+          "kind": "bin"
         }
-    ]
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'd5'",
+      "cargo": {
+        "args": ["build", "--bin=d5", "--package=d5"],
+        "filter": {
+          "name": "d5",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'd5'",
+      "cargo": {
+        "args": ["test", "--no-run", "--bin=d5", "--package=d5"],
+        "filter": {
+          "name": "d5",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'kiri'",
+      "cargo": {
+        "args": ["test", "--no-run", "--lib", "--package=kiri"],
+        "filter": {
+          "name": "kiri",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'kiri'",
+      "cargo": {
+        "args": ["build", "--bin=kiri", "--package=kiri"],
+        "filter": {
+          "name": "kiri",
+          "kind": "bin"
+        }
+      },
+      "args": ["--backend=winit"],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'kiri'",
+      "cargo": {
+        "args": ["test", "--no-run", "--bin=kiri", "--package=kiri"],
+        "filter": {
+          "name": "kiri",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
 }

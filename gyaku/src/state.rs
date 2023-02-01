@@ -30,17 +30,18 @@ impl GyakuState {
     pub fn new(display: &mut Display<Self>, log: Logger) -> Self {
         let display_handle = display.handle();
         let mut seat_state = SeatState::new();
+        let seat = seat_state.new_wl_seat(&display_handle, "seat-0", log.clone());
 
         Self {
             compositor_state: CompositorState::new::<Self, _>(&display_handle, log.clone()),
             xdg_shell_state: XdgShellState::new::<Self, _>(&display_handle, log.clone()),
             shm_state: ShmState::new::<Self, _>(&display_handle, vec![], log.clone()),
-            seat_state: SeatState::new(),
+            seat_state,
             data_device_state: DataDeviceState::new::<Self, _>(&display_handle, log.clone()),
 
             space: Space::new(log.clone()),
             log: log.clone(),
-            seat: seat_state.new_wl_seat(&display_handle, "seat-0", log.clone()),
+            seat,
         }
     }
 }
