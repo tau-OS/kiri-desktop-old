@@ -2,7 +2,7 @@ use slog::Logger;
 use smithay::{
     delegate_output,
     desktop::{Space, Window},
-    input::SeatState,
+    input::{Seat, SeatState},
     wayland::{
         compositor::CompositorState, data_device::DataDeviceState, shell::xdg::XdgShellState,
         shm::ShmState,
@@ -23,12 +23,13 @@ pub struct GyakuState {
 
     pub(crate) space: Space<Window>,
     pub(crate) log: Logger,
-    //    pub(crate) seat: Seat<Self>,
+    pub(crate) seat: Seat<Self>,
 }
 
 impl GyakuState {
     pub fn new(display: &mut Display<Self>, log: Logger) -> Self {
         let display_handle = display.handle();
+        let mut seat_state = SeatState::new();
 
         Self {
             compositor_state: CompositorState::new::<Self, _>(&display_handle, log.clone()),
@@ -38,7 +39,8 @@ impl GyakuState {
             data_device_state: DataDeviceState::new::<Self, _>(&display_handle, log.clone()),
 
             space: Space::new(log.clone()),
-            log,
+            log: log.clone(),
+            seat: seat_state.new_wl_seat(&display_handle, "seat-0", log.clone()),
         }
     }
 }
