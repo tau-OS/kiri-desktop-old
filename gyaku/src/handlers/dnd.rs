@@ -35,11 +35,11 @@ impl ServerDndGrabHandler for GyakuState {
     fn cancelled(&mut self) {
         // ! Soft TODO
     }
-
+    #[instrument(skip(self))]
     fn send(&mut self, mime_type: String, fd: std::os::fd::OwnedFd) {
         // ! Soft TODO
     }
-
+    #[instrument(skip(self))]
     fn finished(&mut self) {
         // ! Soft TODO
     }
