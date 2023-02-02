@@ -1,10 +1,12 @@
 use crate::state::GyakuState;
 use color_eyre::eyre::Context;
 use color_eyre::Result;
+use smithay::desktop::PopupKind;
 use smithay::wayland::compositor::with_states;
 use smithay::wayland::seat::WaylandFocus;
 use smithay::wayland::shell::xdg::XdgToplevelSurfaceData;
 use smithay::{delegate_xdg_shell, desktop::Window, wayland::shell::xdg::XdgShellHandler};
+use tracing::{instrument, trace_span, trace};
 use wayland_server::protocol::wl_surface::WlSurface;
 
 impl XdgShellHandler for GyakuState {
@@ -16,12 +18,18 @@ impl XdgShellHandler for GyakuState {
         let window = Window::new(surface);
         self.space.map_element(window, (0, 0), false);
     }
-
+    #[instrument(skip(self))]
     fn new_popup(
         &mut self,
         surface: smithay::wayland::shell::xdg::PopupSurface,
         positioner: smithay::wayland::shell::xdg::PositionerState,
     ) {
+        trace!("new_popup");
+        trace_span!("new_popup").in_scope(|| {
+            self.popup_manager.track_popup(PopupKind::from(surface)).unwrap();
+        });
+
+        
         // ! Soft TODO
     }
 
@@ -31,7 +39,7 @@ impl XdgShellHandler for GyakuState {
         seat: wayland_server::protocol::wl_seat::WlSeat,
         serial: smithay::utils::Serial,
     ) {
-        todo!()
+        // todo!()
     }
 
     fn new_client(&mut self, client: smithay::wayland::shell::xdg::ShellClient) {
@@ -48,6 +56,9 @@ impl XdgShellHandler for GyakuState {
         seat: wayland_server::protocol::wl_seat::WlSeat,
         serial: smithay::utils::Serial,
     ) {
+        let seat = Seat::from_resource(&seat).unwrap();
+        let wl_surface = surface.wl_surface();
+
         // ! Soft TODO
     }
 

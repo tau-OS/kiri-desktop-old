@@ -1,7 +1,7 @@
 use slog::Logger;
 use smithay::{
     delegate_output,
-    desktop::{Space, Window},
+    desktop::{Space, Window, PopupManager},
     input::{Seat, SeatState},
     wayland::{
         compositor::CompositorState, data_device::DataDeviceState, shell::xdg::XdgShellState,
@@ -14,6 +14,8 @@ use wayland_server::{
     Display,
 };
 /// State of the compositor
+// GOD
+// todo: refactor this whole ass thing, this is a god object
 pub struct GyakuState {
     pub(crate) compositor_state: CompositorState,
     pub(crate) xdg_shell_state: XdgShellState,
@@ -22,6 +24,8 @@ pub struct GyakuState {
     pub(crate) data_device_state: DataDeviceState,
 
     pub(crate) space: Space<Window>,
+    // TODO: periodically cleanup popup state, see https://smithay.github.io/smithay/smithay/desktop/struct.PopupManager.html#method.cleanup
+    pub(crate) popup_manager: PopupManager,
     pub(crate) log: Logger,
     pub(crate) seat: Seat<Self>,
 }
@@ -40,6 +44,7 @@ impl GyakuState {
             data_device_state: DataDeviceState::new::<Self, _>(&display_handle, log.clone()),
 
             space: Space::new(log.clone()),
+            popup_manager: PopupManager::new(log.clone()),
             log: log.clone(),
             seat,
         }

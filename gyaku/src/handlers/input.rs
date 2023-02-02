@@ -2,12 +2,12 @@ use std::sync::Arc;
 
 use smithay::{
     backend::input::{
-        AbsolutePositionEvent, ButtonState, Device, DeviceCapability, Event, InputBackend,
-        InputEvent, KeyState, KeyboardKeyEvent, PointerButtonEvent,
+        AbsolutePositionEvent, Axis, AxisSource, ButtonState, Device, DeviceCapability, Event,
+        InputBackend, InputEvent, KeyState, KeyboardKeyEvent, PointerAxisEvent, PointerButtonEvent,
     },
     input::{
         keyboard::{FilterResult, XkbConfig},
-        pointer::{ButtonEvent, MotionEvent},
+        pointer::{AxisFrame, ButtonEvent, MotionEvent},
     },
     utils::SERIAL_COUNTER,
 };
@@ -28,9 +28,7 @@ impl GyakuState {
             InputEvent::PointerMotionAbsolute { event, .. } => {
                 self.handle_pointer_motion_absolute_event::<I>(event)
             }
-            InputEvent::PointerAxis { event } => {
-                self.handle_pointer_scroll_event::<I>(event)
-            }
+            InputEvent::PointerAxis { event } => self.handle_pointer_scroll_event::<I>(event),
             // todo axis is mouse scroll
             // InputEvent::DeviceRemoved { device, .. } => {
             //     println!("device removed: {:?}", device.name());
@@ -42,14 +40,41 @@ impl GyakuState {
     }
 
     fn handle_pointer_scroll_event<I: InputBackend>(&mut self, event: I::PointerAxisEvent) {
-        let serial = SERIAL_COUNTER.next_serial();
-        let time = Event::time_msec(&event);
-
         let pointer = self.seat.get_pointer().unwrap();
+        let source = event.source();
+
+        let amount_x = event
+            .amount(Axis::Horizontal)
+            .unwrap_or_else(|| event.amount_discrete(Axis::Horizontal).unwrap() * 3.0);
+        let amount_y = event
+            .amount(Axis::Vertical)
+            .unwrap_or_else(|| event.amount_discrete(Axis::Vertical).unwrap() * 3.0);
+
+        let mut frame = AxisFrame::new(event.time_msec()).source(source);
+
+        if amount_x != 0.0 {
+            frame = frame.value(Axis::Horizontal, amount_x);
+
+            if let Some(discrete) = event.amount_discrete(Axis::Horizontal) {
+                frame = frame.discrete(Axis::Horizontal, discrete as i32);
+            }
+        } else if source == AxisSource::Finger {
+            frame = frame.stop(Axis::Horizontal);
+        }
+
+        if amount_y != 0.0 {
+            frame = frame.value(Axis::Vertical, amount_y);
+
+            if let Some(discrete) = event.amount_discrete(Axis::Vertical) {
+                frame = frame.discrete(Axis::Vertical, discrete as i32);
+            }
+        } else if source == AxisSource::Finger {
+            frame = frame.stop(Axis::Vertical);
+        }
 
         // We will actually invert the Y axis here, because that's what most users expect
         // todo: Add an option for "natural scrolling" (don't actually invert)
-        
+        pointer.axis(self, frame)
     }
 
     fn handle_keyboard_key_event<I: InputBackend>(&mut self, event: I::KeyboardKeyEvent) {
@@ -59,6 +84,7 @@ impl GyakuState {
         // We assume that keyboard events are only sent when a keyboard is present... if not that's cursed
         let keyboard = self.seat.get_keyboard().unwrap();
 
+        // todo: handle keyboard shortcuts
         keyboard.input::<(), _>(
             self,
             event.key_code(),

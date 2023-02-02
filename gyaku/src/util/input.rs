@@ -1,9 +1,9 @@
 use smithay::{
     desktop::WindowSurfaceType,
-    input::pointer::PointerHandle,
-    utils::{Logical, Point},
+    input::{pointer::{PointerHandle, GrabStartData}, Seat},
+    utils::{Logical, Point, Serial},
 };
-use wayland_server::protocol::wl_surface::WlSurface;
+use wayland_server::{protocol::wl_surface::WlSurface, Resource};
 
 use crate::state::GyakuState;
 
@@ -22,4 +22,28 @@ pub fn surface_under_pointer(
                 .surface_under(pos - location.to_f64(), WindowSurfaceType::ALL)
                 .map(|(s, p)| (s, p + location))
         })
+}
+
+// https://github.com/Smithay/smithay/blob/e9bdcb982f9c242dfe7d1c3629be6c0a18a4a1ee/smallvil/src/handlers/xdg_shell.rs#L118
+fn check_grab(
+    seat: &Seat<GyakuState>,
+    surface: &WlSurface,
+    serial: Serial,
+) -> Option<GrabStartData<GyakuState>> {
+    let pointer = seat.get_pointer()?;
+
+    // Check that this surface has a click grab.
+    if !pointer.has_grab(serial) {
+        return None;
+    }
+
+    let start_data = pointer.grab_start_data()?;
+
+    let (focus, _) = start_data.focus.as_ref()?;
+    // If the focus was for a different surface, ignore the request.
+    if !focus.id().same_client_as(&surface.id()) {
+        return None;
+    }
+
+    Some(start_data)
 }

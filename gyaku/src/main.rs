@@ -13,6 +13,7 @@ use crate::winit_temp::init_winit;
 mod event_loop;
 mod handlers;
 mod state;
+mod shell;
 mod util;
 mod winit_temp;
 

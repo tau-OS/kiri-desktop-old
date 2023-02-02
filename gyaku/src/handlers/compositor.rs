@@ -31,6 +31,7 @@ impl CompositorHandler for GyakuState {
 
 
         self.commit_xdg_shell_surface(surface);
+        self.popup_manager.commit(surface);
         // ! Soft TODO
     }
 }
