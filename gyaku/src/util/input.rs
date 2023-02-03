@@ -1,6 +1,9 @@
 use smithay::{
     desktop::WindowSurfaceType,
-    input::{pointer::{PointerHandle, GrabStartData}, Seat},
+    input::{
+        pointer::{GrabStartData, PointerHandle},
+        Seat,
+    },
     utils::{Logical, Point, Serial},
 };
 use wayland_server::{protocol::wl_surface::WlSurface, Resource};

@@ -6,7 +6,7 @@ use smithay::wayland::compositor::with_states;
 use smithay::wayland::seat::WaylandFocus;
 use smithay::wayland::shell::xdg::XdgToplevelSurfaceData;
 use smithay::{delegate_xdg_shell, desktop::Window, wayland::shell::xdg::XdgShellHandler};
-use tracing::{instrument, trace_span, trace};
+use tracing::{instrument, trace, trace_span};
 use wayland_server::protocol::wl_surface::WlSurface;
 
 impl XdgShellHandler for GyakuState {
@@ -26,10 +26,11 @@ impl XdgShellHandler for GyakuState {
     ) {
         trace!("new_popup");
         trace_span!("new_popup").in_scope(|| {
-            self.popup_manager.track_popup(PopupKind::from(surface)).unwrap();
+            self.popup_manager
+                .track_popup(PopupKind::from(surface))
+                .unwrap();
         });
 
-        
         // ! Soft TODO
     }
 
@@ -56,8 +57,8 @@ impl XdgShellHandler for GyakuState {
         seat: wayland_server::protocol::wl_seat::WlSeat,
         serial: smithay::utils::Serial,
     ) {
-        let seat = Seat::from_resource(&seat).unwrap();
-        let wl_surface = surface.wl_surface();
+        // let seat = Seat::from_resource(&seat).unwrap();
+        // let wl_surface = surface.wl_surface();
 
         // ! Soft TODO
     }

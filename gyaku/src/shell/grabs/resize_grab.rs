@@ -6,7 +6,8 @@ use smithay::{
         PointerInnerHandle, RelativeMotionEvent,
     },
     reexports::{
-        wayland_protocols::xdg::shell::server::xdg_toplevel, wayland_server::protocol::wl_surface::WlSurface,
+        wayland_protocols::xdg::shell::server::xdg_toplevel,
+        wayland_server::protocol::wl_surface::WlSurface,
     },
     utils::{Logical, Point, Rectangle, Size},
     wayland::{compositor, shell::xdg::SurfaceCachedState},
@@ -55,7 +56,10 @@ impl ResizeSurfaceGrab {
         let initial_rect = initial_window_rect;
 
         ResizeSurfaceState::with(window.toplevel().wl_surface(), |state| {
-            *state = ResizeSurfaceState::Resizing { edges, initial_rect };
+            *state = ResizeSurfaceState::Resizing {
+                edges,
+                initial_rect,
+            };
         });
 
         Self {
@@ -100,10 +104,11 @@ impl PointerGrab<GyakuState> for ResizeSurfaceGrab {
             new_window_height = (self.initial_rect.size.h as f64 + delta.y) as i32;
         }
 
-        let (min_size, max_size) = compositor::with_states(self.window.toplevel().wl_surface(), |states| {
-            let data = states.cached_state.current::<SurfaceCachedState>();
-            (data.min_size, data.max_size)
-        });
+        let (min_size, max_size) =
+            compositor::with_states(self.window.toplevel().wl_surface(), |states| {
+                let data = states.cached_state.current::<SurfaceCachedState>();
+                (data.min_size, data.max_size)
+            });
 
         let min_width = min_size.w.max(1);
         let min_height = min_size.h.max(1);
@@ -223,8 +228,14 @@ impl ResizeSurfaceState {
 
     fn commit(&mut self) -> Option<(ResizeEdge, Rectangle<i32, Logical>)> {
         match *self {
-            Self::Resizing { edges, initial_rect } => Some((edges, initial_rect)),
-            Self::WaitingForLastCommit { edges, initial_rect } => {
+            Self::Resizing {
+                edges,
+                initial_rect,
+            } => Some((edges, initial_rect)),
+            Self::WaitingForLastCommit {
+                edges,
+                initial_rect,
+            } => {
                 // The resize is done, let's go back to idle
                 *self = Self::Idle;
 

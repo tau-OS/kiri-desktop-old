@@ -1,7 +1,7 @@
 use slog::Logger;
 use smithay::{
     delegate_output,
-    desktop::{Space, Window, PopupManager},
+    desktop::{PopupManager, Space, Window},
     input::{Seat, SeatState},
     wayland::{
         compositor::CompositorState, data_device::DataDeviceState, shell::xdg::XdgShellState,

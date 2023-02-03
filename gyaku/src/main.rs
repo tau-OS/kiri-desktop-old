@@ -1,26 +1,25 @@
 use clap::{Parser, ValueEnum};
 use color_eyre::Result;
 use slog::Drain;
-use tracing::metadata::LevelFilter;
 // use tracing_subscriber::fmt;
 use smithay::reexports::calloop::EventLoop;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 use wayland_server::Display;
 
-use crate::winit_temp::init_winit;
+use crate::backend::Backend;
 
+mod backend;
 mod event_loop;
 mod handlers;
-mod state;
 mod shell;
+mod state;
 mod util;
-mod winit_temp;
 
 #[derive(Parser)]
 pub struct Cli {
-    #[clap(long, short = 'B', default_value = "auto")]
-    backend: DisplayBackend,
+    #[clap(long, short = 'B')]
+    backend: Option<DisplayBackend>,
 }
 
 #[derive(Debug, ValueEnum, Clone)]
@@ -28,13 +27,15 @@ pub enum DisplayBackend {
     Winit,
     TtyUdev,
     X11,
-    Auto,
 }
 
 fn log() -> ::slog::Logger {
     use tracing_slog::TracingSlogDrain;
     let drain = TracingSlogDrain;
-    ::slog::Logger::root(slog::LevelFilter::new(drain, slog::Level::Info).fuse(), slog::o!())
+    ::slog::Logger::root(
+        slog::LevelFilter::new(drain, slog::Level::Info).fuse(),
+        slog::o!(),
+    )
 }
 
 fn main() -> Result<()> {
@@ -49,7 +50,7 @@ fn main() -> Result<()> {
     let default_env = EnvFilter::builder()
         // .with_default_directive(LevelFilter::INFO.into())
         .parse("trace,smithay::backend::renderer::gles2=off")?;
-        // .from_env_lossy();
+    // .from_env_lossy();
     // smithay::backend::renderer::gles2
 
     tracing_subscriber::FmtSubscriber::builder()
@@ -83,37 +84,34 @@ fn main() -> Result<()> {
     let address = event_loop::setup_listeners(&mut ev, &mut data)?;
     println!("listening on {}", address.into_string().unwrap());
 
-    init_winit(&mut ev, &mut data, log.clone()).unwrap();
+    let backend_type = cli.backend.unwrap_or_else(|| {
+        if std::env::var_os("DISPLAY").is_some() || std::env::var_os("WAYLAND_DISPLAY").is_some() {
+            DisplayBackend::Winit
+        } else {
+            DisplayBackend::TtyUdev
+        }
+    });
+
+    let display_backend = match backend_type {
+        DisplayBackend::Winit => {
+            slog::info!(log, "Starting with winit backend");
+            backend::winit::WinitBackend::new(&mut data, log.clone())?
+        }
+        DisplayBackend::TtyUdev => {
+            slog::info!(log, "Starting on a tty using udev");
+            todo!();
+        }
+        DisplayBackend::X11 => {
+            slog::info!(log, "Starting with x11 backend");
+            todo!();
+        }
+    };
+
+    display_backend.start(&mut ev)?;
 
     ev.run(None, &mut data, move |_| {
         // Smallvil is running
     })?;
 
-    // match cli.backend {
-    //     DisplayBackend::Winit => {
-    //         slog::info!(log, "Starting anvil with winit backend");
-    //         kiri::winit::run_winit(log);
-    //     }
-    //     DisplayBackend::TtyUdev => {
-    //         slog::info!(log, "Starting anvil on a tty using udev");
-    //         kiri::udev::run_udev(log);
-    //     }
-    //     DisplayBackend::X11 => {
-    //         slog::info!(log, "Starting anvil with x11 backend");
-    //         kiri::x11::run_x11(log);
-    //     }
-    //     _ => {
-    //         // auto-detect backend
-    //         if std::env::var_os("DISPLAY").is_some()
-    //             || std::env::var_os("WAYLAND_DISPLAY").is_some()
-    //         {
-    //             slog::info!(log, "Starting anvil with winit backend");
-    //             kiri::winit::run_winit(log);
-    //         } else {
-    //             slog::info!(log, "Starting anvil on a tty using udev");
-    //             kiri::udev::run_udev(log);
-    //         }
-    //     }
-    // }
     Ok(())
 }

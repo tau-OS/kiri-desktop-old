@@ -1,9 +1,9 @@
 use crate::state::GyakuState;
+use smithay::wayland::compositor::{get_parent, is_sync_subsurface};
 use smithay::{
     backend::renderer::utils::on_commit_buffer_handler, delegate_compositor,
     wayland::compositor::CompositorHandler,
 };
-use smithay::wayland::compositor::{get_parent, is_sync_subsurface};
 use tracing::instrument;
 
 impl CompositorHandler for GyakuState {
@@ -24,11 +24,14 @@ impl CompositorHandler for GyakuState {
             while let Some(parent) = get_parent(&root) {
                 root = parent;
             }
-            if let Some(window) = self.space.elements().find(|w| w.toplevel().wl_surface() == &root) {
+            if let Some(window) = self
+                .space
+                .elements()
+                .find(|w| w.toplevel().wl_surface() == &root)
+            {
                 window.on_commit();
             }
         };
-
 
         self.commit_xdg_shell_surface(surface);
         self.popup_manager.commit(surface);
