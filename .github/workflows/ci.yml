@@ -7,7 +7,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   # yamllint disable-line rule:line-length
-  DEB_DEPS: libwayland-dev libgtk-4-dev libseat-dev libdrm-dev libseat-dev libudev-dev libwayland-egl-backend-dev libxkbcommon-dev libxkbcommon-x11-dev
+  DEB_DEPS: libwayland-dev libsystemd-dev libgtk-4-dev libseat-dev libdrm-dev libseat-dev libudev-dev libwayland-egl-backend-dev libxkbcommon-dev libxkbcommon-x11-dev
 
 jobs:
 
@@ -23,10 +23,15 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: Run cargo bloat
-        uses: orf/cargo-bloat-action@v1
+      - name: Cache Rust compilation
+        uses: metalbear-co/sccache-action@v1.1.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v3
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo test --verbose
 
   formatting:
     name: cargo fmt
