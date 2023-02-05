@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: libwayland-dev libwayland-cursor-dev libdrm-dev libseat-dev libwayland-egl-backend-dev libxkbcommon-dev libxkbcommon-x11-dev
+          packages: libwayland-dev libdrm-dev libseat-dev libwayland-egl-backend-dev libxkbcommon-dev libxkbcommon-x11-dev
           version: 1.0
       - uses: actions/checkout@master
       - name: Install Rust
