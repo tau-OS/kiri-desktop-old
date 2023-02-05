@@ -44,14 +44,13 @@ pub fn setup_listeners(
             Ok(PostAction::Continue)
         },
     )?;
-    
-    
-    /*  
-    * The following block requires that the xwayland channel is passed through to the event loop
-    * the issue is we also kind of have to pass it to the state too so they can actually interact with the x windows
-    * I'm not sure how to do this unless we use some funny pointer magic since rust, at least we don't need to deal with null though
-    * or somehow let the state also hook into this event loop
-    */
+
+    /*
+     * The following block requires that the xwayland channel is passed through to the event loop
+     * the issue is we also kind of have to pass it to the state too so they can actually interact with the x windows
+     * I'm not sure how to do this unless we use some funny pointer magic since rust, at least we don't need to deal with null though
+     * or somehow let the state also hook into this event loop
+     */
     // todo: refactor struct so we can do this
 
     // loop_handle.insert_source(
@@ -59,7 +58,7 @@ pub fn setup_listeners(
     //         smithay::xwayland::XWaylandEvent::Ready { connection, client, client_fd, display } => todo!(),
     //         smithay::xwayland::XWaylandEvent::Exited => todo!(),
     //     }
-        
+
     // ).unwrap();
 
     // yup. I think we really should rewrite this because it only returns wayland sockets

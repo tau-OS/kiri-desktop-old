@@ -1,6 +1,7 @@
 use std::{
+    ffi::OsString,
     sync::{atomic::Ordering, Mutex},
-    time::Duration, ffi::OsString,
+    time::Duration,
 };
 
 use slog::Logger;

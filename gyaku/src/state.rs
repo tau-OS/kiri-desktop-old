@@ -6,7 +6,8 @@ use smithay::{
     wayland::{
         compositor::CompositorState, data_device::DataDeviceState, shell::xdg::XdgShellState,
         shm::ShmState,
-    }, xwayland::{XWayland, XWaylandSource},
+    },
+    xwayland::{XWayland, XWaylandSource},
 };
 use tracing::instrument;
 use wayland_server::{
@@ -37,8 +38,8 @@ impl GyakuState {
         let display_handle = display.handle();
         let mut seat_state = SeatState::new();
         let seat = seat_state.new_wl_seat(&display_handle, "seat-0", log.clone());
-            let (xwayland, channel) = XWayland::new(log.clone(), &display_handle);
-            // todo: add hook into event loop, see `event_loop.rs` for code
+        let (xwayland, channel) = XWayland::new(log.clone(), &display_handle);
+        // todo: add hook into event loop, see `event_loop.rs` for code
 
         Self {
             compositor_state: CompositorState::new::<Self, _>(&display_handle, log.clone()),

@@ -7,8 +7,8 @@ use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 use wayland_server::Display;
 
-use crate::backend::Backend;
 use crate::backend::determine_backend;
+use crate::backend::Backend;
 
 mod backend;
 mod event_loop;
