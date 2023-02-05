@@ -6,19 +6,14 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  # yamllint disable-line rule:line-length
-  DEB_DEPS: libwayland-dev libsystemd-dev libgtk-4-dev libseat-dev libdrm-dev libseat-dev libudev-dev libwayland-egl-backend-dev libxkbcommon-dev libxkbcommon-x11-dev
 
 jobs:
 
   cargo_bloat:
     runs-on: ubuntu-latest
     steps:
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: ${{ env.DEB_DEPS }}
-          version: 1.0
       - uses: actions/checkout@master
+      - uses: ./.github/dependencies
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
