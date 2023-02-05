@@ -135,6 +135,7 @@ pub async fn listen() -> Result<()> {
 }
 
 #[tokio::test]
+#[ignore = "Runs indefinitely, integration test for notifications"]
 async fn test() {
     color_eyre::install().unwrap();
     listen().await.unwrap();
