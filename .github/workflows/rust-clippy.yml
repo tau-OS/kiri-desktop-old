@@ -39,18 +39,21 @@ jobs:
           components: clippy
           override: true
 
+      - name: Cache Rust compilation
+        uses: metalbear-co/sccache-action@v1.1.0
+
       # - name: Install required cargo
       #   run: cargo install clippy-sarif sarif-fmt
 
       - uses: actions-rs/install@v0.1
         with:
           crate: clippy-sarif
-          version: latest
+          use-tool-cache: true
 
       - uses: actions-rs/install@v0.1
         with:
           crate: sarif-fmt
-          version: latest
+          use-tool-cache: true
 
       - name: Run rust-clippy
         run: cargo clippy
