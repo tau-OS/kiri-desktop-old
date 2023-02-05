@@ -8,6 +8,7 @@ use tracing_subscriber::EnvFilter;
 use wayland_server::Display;
 
 use crate::backend::Backend;
+use crate::backend::determine_backend;
 
 mod backend;
 mod event_loop;
@@ -84,13 +85,7 @@ fn main() -> Result<()> {
     let address = event_loop::setup_listeners(&mut ev, &mut data)?;
     println!("listening on {}", address.into_string().unwrap());
 
-    let backend_type = cli.backend.unwrap_or_else(|| {
-        if std::env::var_os("DISPLAY").is_some() || std::env::var_os("WAYLAND_DISPLAY").is_some() {
-            DisplayBackend::Winit
-        } else {
-            DisplayBackend::TtyUdev
-        }
-    });
+    let backend_type = cli.backend.unwrap_or_else(determine_backend);
 
     let display_backend = match backend_type {
         DisplayBackend::Winit => {

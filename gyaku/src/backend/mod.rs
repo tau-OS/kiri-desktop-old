@@ -1,4 +1,4 @@
-use crate::event_loop::EventLoopData;
+use crate::{event_loop::EventLoopData, DisplayBackend};
 use color_eyre::{eyre::eyre, Result};
 use smithay::reexports::calloop::{
     timer::{TimeoutAction, Timer},
@@ -27,5 +27,14 @@ pub trait Backend {
             .map_err(|e| eyre!("Could not setup backend loop: {}", e))?;
 
         Ok(())
+    }
+}
+
+/// Automatically determine backend based on the current environment 
+pub fn determine_backend() -> DisplayBackend {
+    if std::env::var_os("DISPLAY").is_some() || std::env::var_os("WAYLAND_DISPLAY").is_some() {
+        DisplayBackend::Winit
+    } else {
+        DisplayBackend::TtyUdev
     }
 }
