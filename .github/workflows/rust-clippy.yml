@@ -39,8 +39,18 @@ jobs:
           components: clippy
           override: true
 
-      - name: Install required cargo
-        run: cargo install clippy-sarif sarif-fmt
+      # - name: Install required cargo
+      #   run: cargo install clippy-sarif sarif-fmt
+
+      - uses: actions-rs/install@v0.1
+        with:
+          crate: clippy-sarif
+          version: latest
+
+      - uses: actions-rs/install@v0.1
+        with:
+          crate: sarif-fmt
+          version: latest
 
       - name: Run rust-clippy
         run: cargo clippy
@@ -49,7 +59,7 @@ jobs:
         continue-on-error: false
 
       - name: Upload analysis results to GitHub
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: rust-clippy-results.sarif
           wait-for-processing: true
