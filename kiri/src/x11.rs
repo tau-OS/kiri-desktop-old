@@ -1,6 +1,6 @@
 use std::{
     sync::{atomic::Ordering, Mutex},
-    time::Duration,
+    time::Duration, ffi::OsString,
 };
 
 use crate::{
@@ -235,10 +235,15 @@ pub fn run_x11(log: Logger) {
         })
         .expect("Failed to insert X11 Backend into event loop");
 
-    #[cfg(feature = "xwayland")]
-    if let Err(e) = state.xwayland.start(state.handle.clone()) {
-        error!("Failed to start XWayland: {}", e);
-    }
+        #[cfg(feature = "xwayland")]
+        if let Err(e) = state.xwayland.start(
+            state.handle.clone(),
+            None,
+            std::iter::empty::<(OsString, OsString)>(),
+            |_| {},
+        ) {
+            error!("Failed to start XWayland: {}", e);
+        }
     info!("Initialization completed, starting the main loop.");
 
     let mut pointer_element = PointerElement::default();

@@ -8,7 +8,7 @@ use std::{
     path::PathBuf,
     rc::Rc,
     sync::{atomic::Ordering, Mutex},
-    time::Duration,
+    time::Duration, ffi::OsString,
 };
 use tracing::{debug, error, info, trace, warn};
 
@@ -358,7 +358,12 @@ pub fn run_udev(log: Logger) {
      * Start XWayland if supported
      */
     #[cfg(feature = "xwayland")]
-    if let Err(e) = state.xwayland.start(state.handle.clone()) {
+    if let Err(e) = state.xwayland.start(
+        state.handle.clone(),
+        None,
+        std::iter::empty::<(OsString, OsString)>(),
+        |_| {},
+    ) {
         error!("Failed to start XWayland: {}", e);
     }
 
