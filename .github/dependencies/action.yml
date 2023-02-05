@@ -8,5 +8,5 @@ runs:
     - uses: awalsh128/cache-apt-pkgs-action@latest
       with:
         # yamllint disable-line rule:line-length
-        packages: libwayland-dev libsystemd-dev libgtk-4-dev libseat-dev libdrm-dev libseat-dev libudev-dev libwayland-egl-backend-dev libxkbcommon-dev libxkbcommon-x11-dev
+        packages: libinput-dev libwayland-dev libsystemd-dev libgtk-4-dev libseat-dev libdrm-dev libseat-dev libudev-dev libwayland-egl-backend-dev libxkbcommon-dev libxkbcommon-x11-dev
         version: 1.0
