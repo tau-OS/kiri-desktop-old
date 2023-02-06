@@ -98,7 +98,7 @@ fn main() -> Result<()> {
         }
         DisplayBackend::X11 => {
             slog::info!(log, "Starting with x11 backend");
-            backend::x11::X11NestedBackend::new(&mut data, log.clone())?.start(&mut ev)?
+            backend::x11::X11NestedBackend::new(ev.handle(), &mut data, log.clone())?.start(&mut ev)?
         }
     };
 
