@@ -17,7 +17,6 @@ slog-async = "2.7.0"
 thiserror = "1"
 xcursor = {version = "0.3.4", optional = true}
 xkbcommon = "0.5.0"
-smithay = { git = "https://github.com/Smithay/smithay", version = "0.3.0" }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-slog = "0.2.0"
@@ -30,3 +29,11 @@ wayland-scanner = "0.30.0"
 wayland-protocols-wlr = "0.1.0"
 clipboard_wayland = "0.2.0"
 bitflags = "1.3.2"
+
+
+
+
+[dependencies.smithay]
+git = "https://github.com/Smithay/smithay"
+version = "0.3.0"
+features = ["default", "renderer_glow"]

@@ -6,7 +6,7 @@ use smithay::{
     backend::{
         renderer::{
             damage::DamageTrackedRenderer, element::surface::WaylandSurfaceRenderElement,
-            gles2::Gles2Renderer,
+            glow::GlowRenderer,
         },
         winit::{self, WinitError, WinitEvent, WinitEventLoop, WinitGraphicsBackend},
     },
@@ -22,7 +22,7 @@ pub struct WinitBackend {
     log: Logger,
     output: Output,
     renderer: DamageTrackedRenderer,
-    winit_backend: WinitGraphicsBackend<Gles2Renderer>,
+    winit_backend: WinitGraphicsBackend<GlowRenderer>,
     winit_event_loop: WinitEventLoop,
     full_redraw: u8,
 }
@@ -33,7 +33,7 @@ impl WinitBackend {
         let state = &mut data.state;
 
         let (winit_backend, winit_event_loop) =
-            winit::init::<Gles2Renderer, _>(log.clone()).unwrap();
+            winit::init::<GlowRenderer, _>(log.clone()).unwrap();
 
         let mode = Mode {
             size: winit_backend.window_size().physical_size,
@@ -115,7 +115,7 @@ impl Backend for WinitBackend {
         self.winit_backend.bind()?;
         smithay::desktop::space::render_output::<
             _,
-            WaylandSurfaceRenderElement<Gles2Renderer>,
+            WaylandSurfaceRenderElement<GlowRenderer>,
             _,
             _,
             _,

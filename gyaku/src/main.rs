@@ -87,10 +87,10 @@ fn main() -> Result<()> {
 
     let backend_type = cli.backend.unwrap_or_else(determine_backend);
 
-    let display_backend = match backend_type {
+    match backend_type {
         DisplayBackend::Winit => {
             slog::info!(log, "Starting with winit backend");
-            backend::winit::WinitBackend::new(&mut data, log.clone())?
+            backend::winit::WinitBackend::new(&mut data, log.clone())?.start(&mut ev)?
         }
         DisplayBackend::TtyUdev => {
             slog::info!(log, "Starting on a tty using udev");
@@ -98,11 +98,9 @@ fn main() -> Result<()> {
         }
         DisplayBackend::X11 => {
             slog::info!(log, "Starting with x11 backend");
-            todo!();
+            backend::x11::X11NestedBackend::new(&mut data, log.clone())?.start(&mut ev)?
         }
     };
-
-    display_backend.start(&mut ev)?;
 
     ev.run(None, &mut data, move |_| {
         // Smallvil is running
