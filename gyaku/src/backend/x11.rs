@@ -10,7 +10,7 @@ use smithay::{
         }, x11::{X11Backend, WindowBuilder, Window, X11Surface}, egl::{EGLDisplay, EGLContext},
     },
     output::{Mode, Output, PhysicalProperties, Subpixel},
-    reexports::{calloop::timer::TimeoutAction, gbm},
+    reexports::{calloop::{timer::TimeoutAction, LoopHandle}, gbm},
     utils::{Rectangle, Transform, DeviceFd, Size, Logical},
 };
 use std::{time::Duration, collections::HashSet};
@@ -21,7 +21,6 @@ pub struct X11NestedBackend {
     log: Logger,
     output: Output,
     renderer: DamageTrackedRenderer,
-    backend: X11Backend,
     full_redraw: u8,
     window: Window,
     glow_renderer: GlowRenderer,
@@ -29,7 +28,8 @@ pub struct X11NestedBackend {
 }
 
 impl X11NestedBackend {
-    pub fn new(data: &mut EventLoopData, log: Logger) -> Result<Self> {
+    pub fn new(ev_handle: LoopHandle<EventLoopData>, data: &mut EventLoopData, log: Logger) -> Result<Self> {
+        // TODO: cleanup errors
         let display = &mut data.display;
 
         let backend = X11Backend::new(log.clone())?;
@@ -87,9 +87,15 @@ impl X11NestedBackend {
 
         let damage_tracked_renderer = DamageTrackedRenderer::from_output(&output);
 
+        ev_handle.insert_source(backend, move |event, _window, state| {
+            match event {
+                smithay::backend::x11::X11Event::Input(input_event) => state.state.dispatch_input_event(input_event),
+                _ => {}
+            }
+        }).unwrap();
+
         Ok(Self {
             log,
-            backend,
             output,
             renderer: damage_tracked_renderer,
             full_redraw: 0u8,
