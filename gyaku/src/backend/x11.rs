@@ -77,7 +77,7 @@ impl X11NestedBackend {
         let _global = output.create_global::<GyakuState>(&display.handle());
         output.change_current_state(
             Some(mode),
-            Some(Transform::Flipped180),
+            None,
             None,
             Some((0, 0).into()),
         );
