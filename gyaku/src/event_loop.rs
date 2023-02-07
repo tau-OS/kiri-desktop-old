@@ -53,13 +53,6 @@ pub fn setup_listeners(
      */
     // todo: refactor struct so we can do this
 
-    // loop_handle.insert_source(
-    //     data.state.xwayland_channel, move | event, _, data | match event {
-    //         smithay::xwayland::XWaylandEvent::Ready { connection, client, client_fd, display } => todo!(),
-    //         smithay::xwayland::XWaylandEvent::Exited => todo!(),
-    //     }
-
-    // ).unwrap();
 
     // yup. I think we really should rewrite this because it only returns wayland sockets
 

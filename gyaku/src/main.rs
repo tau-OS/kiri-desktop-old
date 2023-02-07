@@ -16,6 +16,7 @@ mod handlers;
 mod shell;
 mod state;
 mod util;
+mod xwayland;
 
 #[derive(Parser)]
 pub struct Cli {

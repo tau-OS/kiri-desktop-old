@@ -6,14 +6,14 @@ use smithay::{
     wayland::{
         compositor::CompositorState, data_device::DataDeviceState, shell::xdg::XdgShellState,
         shm::ShmState,
-    },
-    xwayland::{XWayland, XWaylandSource},
+    }
 };
 use tracing::instrument;
 use wayland_server::{
     backend::{ClientData, ClientId, DisconnectReason},
     Display,
 };
+
 /// State of the compositor
 // GOD
 // todo: refactor this whole ass thing, this is a god object
@@ -29,8 +29,6 @@ pub struct GyakuState {
     pub(crate) popup_manager: PopupManager,
     pub(crate) log: Logger,
     pub(crate) seat: Seat<Self>,
-    pub(crate) xwayland: XWayland,
-    pub(crate) xwayland_channel: XWaylandSource,
 }
 
 impl GyakuState {
@@ -38,7 +36,6 @@ impl GyakuState {
         let display_handle = display.handle();
         let mut seat_state = SeatState::new();
         let seat = seat_state.new_wl_seat(&display_handle, "seat-0", log.clone());
-        let (xwayland, channel) = XWayland::new(log.clone(), &display_handle);
         // todo: add hook into event loop, see `event_loop.rs` for code
 
         Self {
@@ -52,8 +49,6 @@ impl GyakuState {
             popup_manager: PopupManager::new(log.clone()),
             log: log.clone(),
             seat,
-            xwayland,
-            xwayland_channel: channel,
         }
     }
 }
