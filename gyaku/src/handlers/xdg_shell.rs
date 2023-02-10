@@ -10,7 +10,7 @@ use smithay::reexports::wayland_protocols::xdg::shell::server::xdg_toplevel;
 use smithay::utils::{Rectangle, Serial};
 use smithay::wayland::compositor::with_states;
 use smithay::wayland::seat::WaylandFocus;
-use smithay::wayland::shell::xdg::XdgToplevelSurfaceData;
+use smithay::wayland::shell::xdg::{XdgPopupSurfaceData, XdgToplevelSurfaceData};
 use smithay::{delegate_xdg_shell, desktop::Window, wayland::shell::xdg::XdgShellHandler};
 use tracing::{instrument, trace, trace_span};
 use wayland_server::protocol::wl_surface::WlSurface;
@@ -57,7 +57,8 @@ impl XdgShellHandler for GyakuState {
     fn client_pong(&mut self, client: smithay::wayland::shell::xdg::ShellClient) {
         // ! Soft TODO
     }
-
+    /// Handles XDG move requests
+    /// This function is actually not being traced due to performance issues
     fn move_request(
         &mut self,
         surface: smithay::wayland::shell::xdg::ToplevelSurface,
@@ -89,7 +90,7 @@ impl XdgShellHandler for GyakuState {
             pointer.set_grab(self, grab, serial, Focus::Clear);
         }
     }
-
+    /// Handle resizing requests
     fn resize_request(
         &mut self,
         surface: smithay::wayland::shell::xdg::ToplevelSurface,
@@ -145,6 +146,13 @@ impl XdgShellHandler for GyakuState {
         output: Option<wayland_server::protocol::wl_output::WlOutput>,
     ) {
         // ! Soft TODO
+
+        if let Some(output) = output {
+            // get the output size
+
+            // then we resize the window to the output size,
+            // and then save the old size and position somewhere, so we can restore it la
+        }
     }
 
     fn unfullscreen_request(&mut self, surface: smithay::wayland::shell::xdg::ToplevelSurface) {
@@ -193,6 +201,26 @@ impl XdgShellHandler for GyakuState {
 
 impl GyakuState {
     pub fn commit_xdg_shell_surface(&mut self, surface: &WlSurface) -> Option<()> {
+        // TODO: Messy, cleanup later
+        if let Some(PopupKind::Xdg(ref popup)) = self.popup_manager.find_popup(surface) {
+            let initial_configure_sent = with_states(surface, |states| {
+                states
+                    .data_map
+                    .get::<XdgPopupSurfaceData>()
+                    .unwrap()
+                    .lock()
+                    .ok()
+                    .map(|v| v.initial_configure_sent)
+            })?;
+            if !initial_configure_sent {
+                // NOTE: This should never fail as the initial configure is always
+                // allowed.
+                popup.send_configure().unwrap();
+            }
+
+            return None;
+        };
+
         let window = self
             .space
             .elements()
