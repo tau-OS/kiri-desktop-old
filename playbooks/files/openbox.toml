@@ -1,4 +1,4 @@
 [session]
-leader = "/usr/local/target/debug/kiri --backend tty-udev"
+leader = "/usr/local/target/debug/gyaku --backend x11"
 
 [services]
