@@ -20,7 +20,8 @@ impl SeatHandler for GyakuState {
     ) {
         // ! Soft TODO
     }
-    #[instrument(skip(self))]
+    // TODO: This causes major lag
+    // #[instrument(skip(self))]
     fn cursor_image(
         &mut self,
         _seat: &smithay::input::Seat<Self>,

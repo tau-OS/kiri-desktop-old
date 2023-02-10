@@ -1,13 +1,18 @@
+use crate::shell::grabs::move_grab::MoveSurfaceGrab;
 use crate::state::GyakuState;
 use color_eyre::eyre::Context;
 use color_eyre::Result;
 use smithay::desktop::PopupKind;
+use smithay::input::pointer::{Focus, GrabStartData};
+use smithay::input::Seat;
+use smithay::utils::Serial;
 use smithay::wayland::compositor::with_states;
 use smithay::wayland::seat::WaylandFocus;
 use smithay::wayland::shell::xdg::XdgToplevelSurfaceData;
 use smithay::{delegate_xdg_shell, desktop::Window, wayland::shell::xdg::XdgShellHandler};
 use tracing::{instrument, trace, trace_span};
 use wayland_server::protocol::wl_surface::WlSurface;
+use wayland_server::Resource;
 
 impl XdgShellHandler for GyakuState {
     fn xdg_shell_state(&mut self) -> &mut smithay::wayland::shell::xdg::XdgShellState {
@@ -57,10 +62,30 @@ impl XdgShellHandler for GyakuState {
         seat: wayland_server::protocol::wl_seat::WlSeat,
         serial: smithay::utils::Serial,
     ) {
-        // let seat = Seat::from_resource(&seat).unwrap();
-        // let wl_surface = surface.wl_surface();
+        // TODO: From smallvil
+        let seat = Seat::from_resource(&seat).unwrap();
 
-        // ! Soft TODO
+        let wl_surface = surface.wl_surface();
+
+        if let Some(start_data) = check_grab(&seat, wl_surface, serial) {
+            let pointer = seat.get_pointer().unwrap();
+
+            let window = self
+                .space
+                .elements()
+                .find(|w| w.toplevel().wl_surface() == wl_surface)
+                .unwrap()
+                .clone();
+            let initial_window_location = self.space.element_location(&window).unwrap();
+
+            let grab = MoveSurfaceGrab {
+                start_data,
+                window,
+                initial_window_location,
+            };
+
+            pointer.set_grab(self, grab, serial, Focus::Clear);
+        }
     }
 
     fn resize_request(
@@ -160,3 +185,26 @@ impl GyakuState {
 }
 
 delegate_xdg_shell!(GyakuState);
+
+fn check_grab(
+    seat: &Seat<GyakuState>,
+    surface: &WlSurface,
+    serial: Serial,
+) -> Option<GrabStartData<GyakuState>> {
+    let pointer = seat.get_pointer()?;
+
+    // Check that this surface has a click grab.
+    if !pointer.has_grab(serial) {
+        return None;
+    }
+
+    let start_data = pointer.grab_start_data()?;
+
+    let (focus, _) = start_data.focus.as_ref()?;
+    // If the focus was for a different surface, ignore the request.
+    if !focus.id().same_client_as(&surface.id()) {
+        return None;
+    }
+
+    Some(start_data)
+}

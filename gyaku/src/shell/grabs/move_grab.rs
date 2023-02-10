@@ -52,6 +52,7 @@ impl PointerGrab<GyakuState> for MoveSurfaceGrab {
 
         // The button is a button code as defined in the
         // Linux kernel's linux/input-event-codes.h header file, e.g. BTN_LEFT.
+        // todo: allow customizing this, left-handed people exist
         const BTN_LEFT: u32 = 0x110;
 
         if !handle.current_pressed().contains(&BTN_LEFT) {
