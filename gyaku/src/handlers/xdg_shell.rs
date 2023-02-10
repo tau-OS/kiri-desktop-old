@@ -1,11 +1,13 @@
 use crate::shell::grabs::move_grab::MoveSurfaceGrab;
+use crate::shell::grabs::resize_grab::{self, ResizeSurfaceGrab};
 use crate::state::GyakuState;
 use color_eyre::eyre::Context;
 use color_eyre::Result;
 use smithay::desktop::PopupKind;
 use smithay::input::pointer::{Focus, GrabStartData};
 use smithay::input::Seat;
-use smithay::utils::Serial;
+use smithay::reexports::wayland_protocols::xdg::shell::server::xdg_toplevel;
+use smithay::utils::{Rectangle, Serial};
 use smithay::wayland::compositor::with_states;
 use smithay::wayland::seat::WaylandFocus;
 use smithay::wayland::shell::xdg::XdgToplevelSurfaceData;
@@ -95,7 +97,38 @@ impl XdgShellHandler for GyakuState {
         serial: smithay::utils::Serial,
         edges: smithay::reexports::wayland_protocols::xdg::shell::server::xdg_toplevel::ResizeEdge,
     ) {
-        // ! Soft TODO
+        // TODO: From smallvil
+        let seat = Seat::from_resource(&seat).unwrap();
+
+        let wl_surface = surface.wl_surface();
+
+        if let Some(start_data) = check_grab(&seat, wl_surface, serial) {
+            let pointer = seat.get_pointer().unwrap();
+
+            let window = self
+                .space
+                .elements()
+                .find(|w| w.toplevel().wl_surface() == wl_surface)
+                .unwrap()
+                .clone();
+            let initial_window_location = self.space.element_location(&window).unwrap();
+            let initial_window_size = window.geometry().size;
+
+            surface.with_pending_state(|state| {
+                state.states.set(xdg_toplevel::State::Resizing);
+            });
+
+            surface.send_configure();
+
+            let grab = ResizeSurfaceGrab::start(
+                start_data,
+                window,
+                edges.into(),
+                Rectangle::from_loc_and_size(initial_window_location, initial_window_size),
+            );
+
+            pointer.set_grab(self, grab, serial, Focus::Clear);
+        }
     }
 
     fn maximize_request(&mut self, surface: smithay::wayland::shell::xdg::ToplevelSurface) {
@@ -179,6 +212,9 @@ impl GyakuState {
         if !initial_configure_sent {
             window.toplevel().send_configure();
         }
+
+        // TODO: From smallvil
+        resize_grab::handle_commit(&mut self.space, surface);
 
         Some(())
     }
